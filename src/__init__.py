@@ -1,6 +1,6 @@
 from flask import Flask
 import os
-from src.config import Config
+from src.config.config import Config
 from dotenv import load_dotenv
 
 # Load environment variables
@@ -10,7 +10,7 @@ load_dotenv()
 app = Flask(__name__)
 
 # Calling the dev config
-config = Config().dev_config()
+config = Config().dev_config
 
 # Making our app to use dev env
 app.env = config.ENV
