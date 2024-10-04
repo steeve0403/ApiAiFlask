@@ -31,3 +31,8 @@ migrate = Migrate(app, db)
 
 # Import models to let the migrate tool know
 from src.models.user_model import User
+
+
+# Import api Blueprint to register it with the app
+from src.routes import api
+app.register_blueprint(api, url_prefix="/api")
