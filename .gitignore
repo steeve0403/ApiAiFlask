@@ -1,0 +1,58 @@
+# Environnements virtuels
+venv/
+ENV/
+env/
+.venv/
+.ENV/
+
+# PyCharm IDE spécifique
+.idea/
+
+# Fichiers Python et cache
+*.py[cod]
+__pycache__/
+*.so
+*.egg
+*.egg-info/
+.eggs/
+
+# Fichiers de base de données (SQLite, PostgreSQL migration files)
+*.db
+*.sqlite3
+migrations/
+
+# Fichiers de logs et de runtime
+*.log
+*.pot
+*.pyc
+instance/
+
+# Configuration et secrets
+*.env
+.env
+config.yaml
+config.py
+.env.*
+
+# Fichiers temporaires créés par le système
+.DS_Store
+Thumbs.db
+
+# Fichiers générés par Docker
+docker-compose.yml
+docker-compose.override.yml
+Dockerfile
+.dockerignore
+
+# Node.js et frontend
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Divers
+.vscode/
+
+# TODO: To change at moment
+init_setup.sh
+template.py
