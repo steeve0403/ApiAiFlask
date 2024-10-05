@@ -1,114 +1,72 @@
 import os
 from datetime import datetime
-
-import bcrypt
-import jwt
-from flask import request, Response, json, Blueprint, jsonify
-
-from src import db, User
-
-# user controller blueprint to be registered with api blueprint
-users = Blueprint("users", __name__)
+from flask import request, jsonify
+from werkzeug.security import generate_password_hash, check_password_hash
+from flask_jwt_extended import create_access_token
+from src import db
+from src.models.user_model import User
 
 
-# route for login api/users/signin
-@users.route('/signin', methods=["POST"])
+# Route pour se connecter (api/users/signin)
 def handle_login():
     try:
-        # first check user parameters
-        data = request.json
-        if "email" and "password" in data:
-            # check db for user records
-            user = User.query.filter_by(email=data["email"]).first()
+        data = request.get_json()
+        email = data.get('email')
+        password = data.get('password')
 
-            # if user records exists we will check user password
-            if user:
-                # check user password
-                if bcrypt.check_password_hash(user.password, data["password"]):
-                    # user password matched, we will generate token
-                    payload = {
-                        'iat': datetime.utcnow(),
-                        'user_id': str(user.id).replace('-', ""),
-                        'firstname': user.firstname,
-                        'lastname': user.lastname,
-                        'email': user.email,
-                    }
-                    token = jwt.encode(payload, os.getenv('SECRET_KEY'), algorithm='HS256')
-                    return Response(
-                        response=json.dumps({'status': "success",
-                                             "message": "User Sign In Successful",
-                                             "token": token}),
-                        status=200,
-                        mimetype='application/json'
-                    )
+        if not email or not password:
+            return jsonify({'status': "failed", "message": "Email and Password are required"}), 400
 
-                else:
-                    return Response(
-                        response=json.dumps({'status': "failed", "message": "User Password Mistmatched"}),
-                        status=401,
-                        mimetype='application/json'
-                    )
-                    # if there is no user record
-            else:
-                return Response(
-                    response=json.dumps({'status': "failed", "message": "User Record doesn't exist, kindly register"}),
-                    status=404,
-                    mimetype='application/json'
-                )
-        else:
-            # if request parameters are not correct
-            return Response(
-                response=json.dumps({'status': "failed", "message": "User Parameters Email and Password are required"}),
-                status=400,
-                mimetype='application/json'
-            )
+        # Vérifier l'utilisateur dans la base de données
+        user = User.query.filter_by(email=email).first()
+        if not user:
+            return jsonify({'status': "failed", "message": "User not found"}), 404
+
+        # Vérifier le mot de passe
+        if not check_password_hash(user.password, password):
+            return jsonify({'status': "failed", "message": "Invalid Password"}), 401
+
+        # Si le mot de passe est correct, générer un token JWT
+        access_token = create_access_token(identity={'user_id': user.id, 'role': user.role})
+        return jsonify({'status': "success", "message": "User Login Successful", "access_token": access_token}), 200
 
     except Exception as e:
-        return Response(
-            response=json.dumps({'status': "failed",
-                                 "message": "Error Occured",
-                                 "error": str(e)}),
-            status=500,
-            mimetype='application/json'
-        )
+        return jsonify({'status': "failed", "message": "An error occurred", "error": str(e)}), 500
 
 
-# route for login api/users/signup
-@users.route('/signup', methods=["POST"])
+# Route pour s'inscrire (api/users/signup)
 def handle_signup():
     try:
-        # first validate required use parameters
-        data = request.json
-        if "firstname" in data and "lastname" and data and "email" and "password" in data:
-            # validate if the user exist
-            user = User.query.filter_by(email=data["email"]).first()
-            # usecase if the user doesn't exists
-            if not user:
-                # creating the user instance of User Model to be stored in DB
-                user_obj = User(
-                    firstname=data["firstname"],
-                    lastname=data["lastname"],
-                    email=data["email"],
-                    # hashing the password
-                    password=bcrypt.generate_password_hash(data['password']).decode('utf-8')
-                )
-                db.session.add(user_obj)
-                db.session.commit()
+        data = request.get_json()
+        firstname = data.get('firstname')
+        lastname = data.get('lastname')
+        email = data.get('email')
+        password = data.get('password')
 
-                # lets generate jwt token
-                payload = {
-                    'iat': datetime.utcnow(),
-                    'user_id': str(user_obj.id),
-                    # .replace('-', ""),
-                    'firstname': user_obj.firstname,
-                    'lastname': user_obj.lastname,
-                    'email': user_obj.email,
-                }
-                token = jwt.encode(payload, os.getenv('SECRET_KEY'), algorithm='HS256')
-                return jsonify({'status': "success", "message": "User Sign up Successful", "token": token}), 201
-            else:
-                return jsonify({'status': "failed", "message": "User already exists"}), 409
-        else:
+        if not firstname or not lastname or not email or not password:
             return jsonify({'status': "failed", "message": "Missing parameters"}), 400
+
+        # Vérifier si l'utilisateur existe déjà
+        existing_user = User.query.filter_by(email=email).first()
+        if existing_user:
+            return jsonify({'status': "failed", "message": "User already exists"}), 409
+
+        # Créer un nouvel utilisateur et hacher le mot de passe
+        hashed_password = generate_password_hash(password)
+        new_user = User(
+            firstname=firstname,
+            lastname=lastname,
+            email=email,
+            password=hashed_password,
+            role='user'  # Par défaut, chaque nouvel utilisateur est un simple utilisateur
+        )
+
+        db.session.add(new_user)
+        db.session.commit()
+
+        # Générer un token JWT pour le nouvel utilisateur
+        access_token = create_access_token(identity={'user_id': new_user.id, 'role': new_user.role})
+        return jsonify({'status': "success", "message": "User Sign up Successful", "access_token": access_token}), 201
+
     except Exception as e:
         return jsonify({'status': "failed", "message": "An error occurred", "error": str(e)}), 500
