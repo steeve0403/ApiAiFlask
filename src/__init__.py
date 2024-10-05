@@ -5,6 +5,9 @@ from dotenv import load_dotenv
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 
+# For password hashing
+from flask_bcrypt import Bcrypt
+
 # Load environment variables
 load_dotenv()
 
@@ -16,6 +19,10 @@ config = Config().dev_config
 
 # Making our app to use dev env
 app.env = config.ENV
+
+# Load the secret key defined in the .env file
+app.secret_key = os.environ.get('SECRET_KEY')
+bcrypt = Bcrypt(app)
 
 # Path for loccal sqlite db
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('SQLALCHEMY_DATABASE_URI_DEV')
