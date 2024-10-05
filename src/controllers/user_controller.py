@@ -3,7 +3,7 @@ from datetime import datetime
 
 import bcrypt
 import jwt
-from flask import request, Response, json, Blueprint
+from flask import request, Response, json, Blueprint, jsonify
 
 from src import db, User
 
@@ -19,7 +19,7 @@ def handle_login():
         data = request.json
         if "email" and "password" in data:
             # check db for user records
-            user = User.query.filter_by(email = data["email"]).first()
+            user = User.query.filter_by(email=data["email"]).first()
 
             # if user records exists we will check user password
             if user:
@@ -28,12 +28,12 @@ def handle_login():
                     # user password matched, we will generate token
                     payload = {
                         'iat': datetime.utcnow(),
-                        'user_id': str(user.id).replace('-',""),
+                        'user_id': str(user.id).replace('-', ""),
                         'firstname': user.firstname,
                         'lastname': user.lastname,
                         'email': user.email,
                     }
-                    token = jwt.encode(payload,os.getenv('SECRET_KEY'),algorithm='HS256')
+                    token = jwt.encode(payload, os.getenv('SECRET_KEY'), algorithm='HS256')
                     return Response(
                         response=json.dumps({'status': "success",
                                              "message": "User Sign In Successful",
@@ -98,41 +98,17 @@ def handle_signup():
                 # lets generate jwt token
                 payload = {
                     'iat': datetime.utcnow(),
-                    'user_id': str(user_obj.id).replace('-', ""),
+                    'user_id': str(user_obj.id),
+                    # .replace('-', ""),
                     'firstname': user_obj.firstname,
                     'lastname': user_obj.lastname,
                     'email': user_obj.email,
                 }
                 token = jwt.encode(payload, os.getenv('SECRET_KEY'), algorithm='HS256')
-                return Response(
-                    response=json.dumps({'status': "success",
-                                         "message": "User Sign up Successful",
-                                         "token": token}),
-                    status=201,
-                    mimetype='application/json'
-                )
+                return jsonify({'status': "success", "message": "User Sign up Successful", "token": token}), 201
             else:
-                print(user)
-                # if user already exists
-                return Response(
-                    response=json.dumps({'status': "failed", "message": "User already exists kindly use sign in"}),
-                    status=409,
-                    mimetype='application/json'
-                )
+                return jsonify({'status': "failed", "message": "User already exists"}), 409
         else:
-            # if request parameters are not correct
-            return Response(
-                response=json.dumps({'status': "failed",
-                                     "message": "User Parameters Firstname, Lastname, Email and Password are required"}),
-                status=400,
-                mimetype='application/json'
-            )
-
+            return jsonify({'status': "failed", "message": "Missing parameters"}), 400
     except Exception as e:
-        return Response(
-            response=json.dumps({'status': "failed",
-                                 "message": "Error Occured",
-                                 "error": str(e)}),
-            status=500,
-            mimetype='application/json'
-        )
+        return jsonify({'status': "failed", "message": "An error occurred", "error": str(e)}), 500
