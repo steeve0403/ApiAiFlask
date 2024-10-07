@@ -11,6 +11,7 @@ auth_bp.route('/signup', methods=['POST'])(handle_signup)
 # Route pour la connexion
 auth_bp.route('/signin', methods=['POST'])(handle_login)
 
+
 # Route réservée aux administrateurs
 @auth_bp.route('/admin/dashboard', methods=['GET'])
 @jwt_required()

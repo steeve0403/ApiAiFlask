@@ -70,3 +70,5 @@ def handle_signup():
 
     except Exception as e:
         return jsonify({'status': "failed", "message": "An error occurred", "error": str(e)}), 500
+
+
