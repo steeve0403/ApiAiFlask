@@ -5,15 +5,13 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_jwt_extended import get_jwt_identity, get_jwt, jwt_required
 from src import db
 from src.services.jwt_service import create_jwt_token, revoke_jwt_token  # Refactoring to use services
-from src.services.api_key_service import \
-    generate_api_key as generate_api_key_service  # Refactored to use API key service
+from src.services.api_key_service import generate_api_key as generate_api_key_service  # Refactored to use API key service
 from src.services.user_service import signup_user, login_user  # Refactored to use user service
 import logging
 
 # Logger configuration
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
-
 
 @jwt_required()
 def generate_api_key():
@@ -27,8 +25,7 @@ def generate_api_key():
         return jsonify(response), 201
     except Exception as e:
         logger.error(f"Error generating API key: {str(e)}")
-        return jsonify({"status": "failed", "message": "Error generating API key", "error": str(e)}), 500
-
+        return jsonify({'status': 'failed', 'message': 'Error generating API key', 'error': str(e)}), 500
 
 def signup():
     """
@@ -38,14 +35,14 @@ def signup():
     """
     try:
         data = request.get_json()
-        tokens = signup_user(data)
-        return jsonify({"status": "success", "message": "User Sign up Successful", "tokens": tokens}), 201
+        role = data.get('role', 'user')  # Default role is 'user'
+        tokens = signup_user(data, role=role)
+        return jsonify({'status': "success", "message": "User Sign up Successful", "tokens": tokens}), 201
     except ValueError as ve:
-        return jsonify({"status": "failed", "message": str(ve)}), 400
+        return jsonify({'status': "failed", "message": str(ve)}), 400
     except Exception as e:
         logger.error(f"Error during signup: {str(e)}")
-        return jsonify({"status": "failed", "message": "An error occurred", "error": str(e)}), 500
-
+        return jsonify({'status': "failed", "message": "An error occurred", 'error': str(e)}), 500
 
 def login():
     """
@@ -56,13 +53,12 @@ def login():
     try:
         data = request.get_json()
         tokens = login_user(data)
-        return jsonify({"status": "success", "message": "User Login Successful", "tokens": tokens}), 200
+        return jsonify({'status': "success", "message": "User Login Successful", "tokens": tokens}), 200
     except ValueError as ve:
-        return jsonify({"status": "failed", "message": str(ve)}), 400
+        return jsonify({'status': "failed", "message": str(ve)}), 400
     except Exception as e:
         logger.error(f"Error during login: {str(e)}")
-        return jsonify({"status": "failed", "message": "An error occurred", "error": str(e)}), 500
-
+        return jsonify({'status': "failed", "message": "An error occurred", 'error': str(e)}), 500
 
 @jwt_required()
 def logout():
@@ -78,4 +74,4 @@ def logout():
         return jsonify({"message": "Successfully logged out"}), 200
     except Exception as e:
         logger.error(f"Error during logout: {str(e)}")
-        return jsonify({"status": "failed", 'message': 'An error occurred during logout', 'error': str(e)}), 500
+        return jsonify({'status': 'failed', 'message': 'An error occurred during logout', 'error': str(e)}), 500

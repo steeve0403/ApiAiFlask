@@ -8,11 +8,12 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def signup_user(data):
+def signup_user(data, role='user'):
     """
     Sign up a new user by creating a new account.
 
     :param data: Dictionary containing user details.
+    :param role: Role of the user (default is 'user').
     :return: Tokens if signup is successful.
     """
     firstname = data.get('firstname')
@@ -35,7 +36,7 @@ def signup_user(data):
         lastname=lastname,
         email=email,
         password=hashed_password,
-        role='user'  # Par défaut, chaque nouvel utilisateur est un simple utilisateur
+        role=role  # Set the role of the user
     )
 
     db.session.add(new_user)
@@ -66,7 +67,7 @@ def login_user(data):
         raise ValueError("User not found")
 
     # Vérifier le mot de passe
-    if not check_password_hash(user.password, password):
+    if not check_password_hash(user.password_hash, password):
         raise ValueError("Invalid Password")
 
     # Si le mot de passe est correct, générer un token JWT
