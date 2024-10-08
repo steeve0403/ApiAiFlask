@@ -1,15 +1,21 @@
 from flask import Blueprint
-from src.controllers.user_controller import handle_signup, handle_login, admin_dashboard
+from src.controllers.user_controller import signup, login, logout, generate_api_key
 from src.middlewares.decorators import role_required
 from flask_jwt_extended import jwt_required
 
 auth_bp = Blueprint('auth', __name__)
 
-# Route pour l'inscription
-auth_bp.route('/signup', methods=['POST'])(handle_signup)
+# Route for registration
+auth_bp.route('/signup', methods=['POST'])(signup)
 
-# Route pour la connexion
-auth_bp.route('/signin', methods=['POST'])(handle_login)
+# Route for connexion
+auth_bp.route('/signin', methods=['POST'])(login)
+
+# Route for logout
+auth_bp.route('/logout', methods=['POST'])(logout)
+
+# Route for generating an API key
+auth_bp.route('generate', methods=['POST'])(generate_api_key)
 
 
 # Route réservée aux administrateurs
