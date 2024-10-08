@@ -1,6 +1,6 @@
-from src import config, app
+from src import app
 
 if __name__ == "__main__":
-    app.run(host= config.HOST,
-            port= config.PORT,
-            debug= config.DEBUG)
+    app.run(host=app.config['HOST'],
+            port=app.config['PORT'],
+            debug=app.config['DEBUG'])

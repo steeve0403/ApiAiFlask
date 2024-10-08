@@ -1,45 +1,38 @@
 from flask import Flask
 import os
-from src.config.config import Config
 from dotenv import load_dotenv
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
-
-# For password hashing
 from flask_bcrypt import Bcrypt
+from src.config.config import get_config
+import logging
 
 # Load environment variables
 load_dotenv()
 
+# Logger configuration
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
+
 # Declare the app
 app = Flask(__name__)
 
-# Calling the dev config
-config = Config().dev_config
-
-# Making our app to use dev env
-app.env = config.ENV
+# Load the appropriate configuration based on the environment
+config = get_config()
+app.config.from_object(config)
 
 # Load the secret key defined in the .env file
-app.secret_key = os.environ.get('SECRET_KEY')
+app.secret_key = os.getenv('SECRET_KEY', 'default_secret_key')
+
+# Initialize extensions
 bcrypt = Bcrypt(app)
-
-# Path for loccal sqlite db
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('SQLALCHEMY_DATABASE_URI_DEV')
-
-# To specify the track modifications of objects and emit signals
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = os.environ.get('SQLALCHEMY_TRACK_MODIFICATIONS')
-
-# Sqlalchemy instance
 db = SQLAlchemy(app)
-
-# Flask migrate instance to handle db migrations
 migrate = Migrate(app, db)
 
-# Import models to let the migrate tool know
+# Import models to let the migrate tool know about them
 from src.models.user_model import User
+from src.models.token_model import Token  # Import other models if they exist
 
-
-# Import api Blueprint to register it with the app
-from src.routes import api
-app.register_blueprint(api, url_prefix="/api")
+# Import and register Blueprints
+from src.routes import auth_bp
+app.register_blueprint(auth_bp, url_prefix=config.API_BASE_PATH)
