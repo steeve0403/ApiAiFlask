@@ -2,85 +2,80 @@ import os
 from datetime import datetime
 from flask import request, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask_jwt_extended import create_access_token, get_jwt_identity, get_jwt, jwt_required
+from flask_jwt_extended import get_jwt_identity, get_jwt, jwt_required
 from src import db
-from src.models.token_model import RevokedToken
-from src.models.user_model import User
-from src.models.api_key_model import ApiKeyModel
+from src.services.jwt_service import create_jwt_token, revoke_jwt_token  # Refactoring to use services
+from src.services.api_key_service import \
+    generate_api_key as generate_api_key_service  # Refactored to use API key service
+from src.services.user_service import signup_user, login_user  # Refactored to use user service
+import logging
+
+# Logger configuration
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
 
 
+@jwt_required()
 def generate_api_key():
-    current_user_id = get_jwt_identity()
-    new_api_key = ApiKeyModel(user_id=current_user_id)
-    new_api_key.save()
-    return jsonify({'api-key': new_api_key.key}), 201
+    """
+    Generate a new API key for the current user by calling the service function.
+
+    :return: JSON response containing the new API key.
+    """
+    try:
+        response = generate_api_key_service()
+        return jsonify(response), 201
+    except Exception as e:
+        logger.error(f"Error generating API key: {str(e)}")
+        return jsonify({"status": "failed", "message": "Error generating API key", "error": str(e)}), 500
 
 
 def signup():
+    """
+    Sign up a new user by creating a new account by calling the user service.
+
+    :return: JSON response indicating success or failure.
+    """
     try:
         data = request.get_json()
-        firstname = data.get('firstname')
-        lastname = data.get('lastname')
-        email = data.get('email')
-        password = data.get('password')
-
-        if not firstname or not lastname or not email or not password:
-            return jsonify({'status': "failed", "message": "Missing parameters"}), 400
-
-        # Vérifier si l'utilisateur existe déjà
-        existing_user = User.query.filter_by(email=email).first()
-        if existing_user:
-            return jsonify({'status': "failed", "message": "User already exists"}), 409
-
-        # Créer un nouvel utilisateur et hacher le mot de passe
-        hashed_password = generate_password_hash(password)
-        new_user = User(
-            firstname=firstname,
-            lastname=lastname,
-            email=email,
-            password=hashed_password,
-            role='user'  # Par défaut, chaque nouvel utilisateur est un simple utilisateur
-        )
-
-        db.session.add(new_user)
-        db.session.commit()
-
-        # Générer un token JWT pour le nouvel utilisateur
-        access_token = create_access_token(identity={'user_id': new_user.id, 'role': new_user.role})
-        return jsonify({'status': "success", "message": "User Sign up Successful", "access_token": access_token}), 201
-
+        tokens = signup_user(data)
+        return jsonify({"status": "success", "message": "User Sign up Successful", "tokens": tokens}), 201
+    except ValueError as ve:
+        return jsonify({"status": "failed", "message": str(ve)}), 400
     except Exception as e:
-        return jsonify({'status': "failed", "message": "An error occurred", "error": str(e)}), 500
+        logger.error(f"Error during signup: {str(e)}")
+        return jsonify({"status": "failed", "message": "An error occurred", "error": str(e)}), 500
 
 
 def login():
+    """
+    Log in an existing user by verifying their credentials by calling the user service.
+
+    :return: JSON response containing access and refresh tokens or indicating failure.
+    """
     try:
         data = request.get_json()
-        email = data.get('email')
-        password = data.get('password')
-
-        if not email or not password:
-            return jsonify({'status': "failed", "message": "Email and Password are required"}), 400
-
-        # Vérifier l'utilisateur dans la base de données
-        user = User.query.filter_by(email=email).first()
-        if not user:
-            return jsonify({'status': "failed", "message": "User not found"}), 404
-
-        # Vérifier le mot de passe
-        if not check_password_hash(user.password, password):
-            return jsonify({'status': "failed", "message": "Invalid Password"}), 401
-
-        # Si le mot de passe est correct, générer un token JWT
-        access_token = create_access_token(identity={'user_id': user.id, 'role': user.role})
-        return jsonify({'status': "success", "message": "User Login Successful", "access_token": access_token}), 200
-
+        tokens = login_user(data)
+        return jsonify({"status": "success", "message": "User Login Successful", "tokens": tokens}), 200
+    except ValueError as ve:
+        return jsonify({"status": "failed", "message": str(ve)}), 400
     except Exception as e:
-        return jsonify({'status': "failed", "message": "An error occurred", "error": str(e)}), 500
+        logger.error(f"Error during login: {str(e)}")
+        return jsonify({"status": "failed", "message": "An error occurred", "error": str(e)}), 500
+
 
 @jwt_required()
 def logout():
-    jti = get_jwt()['jti'] # JWT ID
-    revoked_token = RevokedToken(jti=jti)
-    revoked_token.add()
-    return jsonify({"message": "Successfully logged out"}), 200
+    """
+    Log out the current user by revoking their JWT token.
+
+    :return: JSON response indicating successful logout.
+    """
+    try:
+        jti = get_jwt()['jti']  # JWT ID
+        revoke_jwt_token(jti)  # Appeler la fonction pour révoquer le token
+        logger.info(f"User logged out, token {jti} revoked")
+        return jsonify({"message": "Successfully logged out"}), 200
+    except Exception as e:
+        logger.error(f"Error during logout: {str(e)}")
+        return jsonify({"status": "failed", 'message': 'An error occurred during logout', 'error': str(e)}), 500
