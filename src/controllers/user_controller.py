@@ -35,14 +35,18 @@ def signup():
     """
     try:
         data = request.get_json()
+        if not data:
+            raise ValueError("Invalid input data. JSON is required.")
+
         role = data.get('role', 'user')  # Default role is 'user'
         tokens = signup_user(data, role=role)
         return jsonify({'status': "success", "message": "User Sign up Successful", "tokens": tokens}), 201
     except ValueError as ve:
+        logger.error(f"Validation error during signup: {str(ve)}")
         return jsonify({'status': "failed", "message": str(ve)}), 400
     except Exception as e:
-        logger.error(f"Error during signup: {str(e)}")
-        return jsonify({'status': "failed", "message": "An error occurred", 'error': str(e)}), 500
+        logger.error(f"Unexpected error during signup: {str(e)}")
+        return jsonify({'status': "failed", "message": "An unexpected error occurred", 'error': str(e)}), 500
 
 def login():
     """
@@ -52,13 +56,17 @@ def login():
     """
     try:
         data = request.get_json()
+        if not data:
+            raise ValueError("Invalid input data. JSON is required.")
+
         tokens = login_user(data)
         return jsonify({'status': "success", "message": "User Login Successful", "tokens": tokens}), 200
     except ValueError as ve:
+        logger.error(f"Validation error during login: {str(ve)}")
         return jsonify({'status': "failed", "message": str(ve)}), 400
     except Exception as e:
-        logger.error(f"Error during login: {str(e)}")
-        return jsonify({'status': "failed", "message": "An error occurred", 'error': str(e)}), 500
+        logger.error(f"Unexpected error during login: {str(e)}")
+        return jsonify({'status': "failed", "message": "An unexpected error occurred", 'error': str(e)}), 500
 
 @jwt_required()
 def logout():
@@ -71,7 +79,7 @@ def logout():
         jti = get_jwt()['jti']  # JWT ID
         revoke_jwt_token(jti)  # Appeler la fonction pour révoquer le token
         logger.info(f"User logged out, token {jti} revoked")
-        return jsonify({"message": "Successfully logged out"}), 200
+        return jsonify({"status": "success", "message": "Successfully logged out"}), 200
     except Exception as e:
         logger.error(f"Error during logout: {str(e)}")
-        return jsonify({'status': 'failed', 'message': 'An error occurred during logout', 'error': str(e)}), 500
+        return jsonify({'status': 'failed', 'message': 'An unexpected error occurred during logout', 'error': str(e)}), 500

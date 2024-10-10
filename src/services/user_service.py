@@ -24,25 +24,25 @@ def signup_user(data, role='user'):
     if not firstname or not lastname or not email or not password:
         raise ValueError("Missing parameters")
 
-    # Vérifier si l'utilisateur existe déjà
+    # Check if the user already exists
     existing_user = User.query.filter_by(email=email).first()
     if existing_user:
         raise ValueError("User already exists")
 
-    # Créer un nouvel utilisateur et hacher le mot de passe
+    # Create new user and hash password
     hashed_password = generate_password_hash(password)
     new_user = User(
         firstname=firstname,
         lastname=lastname,
         email=email,
-        password=hashed_password,
+        password=password,
         role=role  # Set the role of the user
     )
 
     db.session.add(new_user)
     db.session.commit()
 
-    # Générer un token JWT pour le nouvel utilisateur
+    # Generate a JWT token for the new user
     tokens = create_jwt_token(user_id=new_user.id, role=new_user.role)
     logger.info(f"New user signed up: {email}")
     return tokens
@@ -61,16 +61,16 @@ def login_user(data):
     if not email or not password:
         raise ValueError("Email and Password are required")
 
-    # Vérifier l'utilisateur dans la base de données
+    # Check user in database
     user = User.query.filter_by(email=email).first()
     if not user:
         raise ValueError("User not found")
 
-    # Vérifier le mot de passe
-    if not check_password_hash(user.password_hash, password):
+    # Verify password
+    if not check_password_hash(user.password, password):
         raise ValueError("Invalid Password")
 
-    # Si le mot de passe est correct, générer un token JWT
+    # If the password is correct, generate a JWT token
     tokens = create_jwt_token(user_id=user.id, role=user.role)
     logger.info(f"User logged in: {email}")
     return tokens
