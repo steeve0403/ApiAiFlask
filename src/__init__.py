@@ -33,5 +33,7 @@ from src.models.user_model import User
 from src.models.token_model import RevokedToken
 
 # Import and register Blueprints
-from src.routes import auth_bp
-app.register_blueprint(auth_bp, url_prefix=config.API_BASE_PATH)
+from src.routes import auth_bp, api_key_bp
+
+app.register_blueprint(auth_bp, url_prefix='/api/auth')
+app.register_blueprint(api_key_bp, url_prefix='/api/keys')

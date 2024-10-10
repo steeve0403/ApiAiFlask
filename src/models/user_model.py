@@ -14,6 +14,7 @@ class User(db.Model):
     role = db.Column(db.String(50), nullable=False, default='user')  # Role can be 'user' or 'admin'
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    is_active = db.Column(db.Boolean, default=True)
 
     def __init__(self, firstname, lastname, email, password, role='user'):
         """
@@ -52,4 +53,4 @@ class User(db.Model):
         db.session.commit()
 
     def __repr__(self):
-        return f"User('{self.firstname}', '{self.lastname}', '{self.email}', '{self.role}')"
+        return f"User('{self.firstname}', '{self.lastname}', '{self.email}', '{self.role}', '{self.is_active}')"

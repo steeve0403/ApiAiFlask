@@ -3,28 +3,12 @@ import logging
 from flask import request, jsonify
 from flask_jwt_extended import get_jwt, jwt_required
 
-from src.services.api_key_service import \
-    generate_api_key as generate_api_key_service  # Refactored to use API key service
 from src.services.jwt_service import revoke_jwt_token  # Refactoring to use services
 from src.services.user_service import signup_user, login_user  # Refactored to use user service
 
 # Logger configuration
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
-
-
-@jwt_required()
-def generate_api_key():
-    """
-    Generate a new API key for the current user by calling the service function.
-    :return: JSON response containing the new API key.
-    """
-    try:
-        response = generate_api_key_service()
-        return jsonify(response), 201
-    except Exception as e:
-        logger.error(f"Error generating API key: {str(e)}")
-        return jsonify({'status': 'failed', 'message': 'Error generating API key', 'error': str(e)}), 500
 
 
 def signup():

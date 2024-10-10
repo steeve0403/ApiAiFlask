@@ -1,5 +1,8 @@
 from flask import Blueprint, jsonify
-from src.controllers.user_controller import signup, login, logout, generate_api_key
+
+from src.controllers.admin_controller import admin_dashboard, list_users, deactivate_user, activate_user
+from src.controllers.api_key_controller import get_user_api_keys, generate_api_key
+from src.controllers.user_controller import signup, login, logout
 from src.middlewares.decorators import role_required
 from flask_jwt_extended import jwt_required
 import logging
@@ -8,6 +11,7 @@ import logging
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
+# Auth Blueprint
 auth_bp = Blueprint('auth', __name__)
 
 # Route for registration
@@ -19,25 +23,18 @@ auth_bp.route('/signin', methods=['POST'])(login)
 # Route for logout
 auth_bp.route('/logout', methods=['POST'])(logout)
 
+# Routes réservées aux administrateurs
+auth_bp.route('/admin/dashboard', methods=['GET'])(admin_dashboard)
+auth_bp.route('/admin/users', methods=['GET'])(list_users)
+auth_bp.route('/admin/users/<int:user_id>/deactivate', methods=['PUT'])(deactivate_user)
+auth_bp.route('/admin/users/<int:user_id>/activate', methods=['PUT'])(activate_user)
+
+# API Keys Blueprint
+api_key_bp = Blueprint('api_keys', __name__)
+
 # Route for generating an API key
-auth_bp.route('/generate-api-key', methods=['POST'])(generate_api_key)
+api_key_bp.route('/generate', methods=['POST'])(generate_api_key)
 
-# Route reserved for administrators
-@auth_bp.route('/admin/dashboard', methods=['GET'])
-
-@jwt_required()
-@role_required('admin')  # Verify admin role before allowing access
-def admin_dashboard():
-    """
-    Admin dashboard endpoint (placeholder).
-
-    :return: JSON response indicating success.
-    """
-    try:
-        logger.info("Admin dashboard accessed")
-        return jsonify({"message": "Welcome to the admin dashboard"}), 200
-    except Exception as e:
-        logger.error(f"Error accessing admin dashboard: {str(e)}")
-        return jsonify({'status': 'failed', 'message': 'An error occurred', 'error': str(e)}), 500
-
+# Route for getting user API keys
+api_key_bp.route('/all', methods=['GET'])(get_user_api_keys)
 
