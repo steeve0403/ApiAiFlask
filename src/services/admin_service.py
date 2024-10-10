@@ -1,60 +1,64 @@
-from src.models.user_model import User
-from src import db
 import logging
+from src.models.user_model import User
+from src.models.log_model import Log
+from src import db
 
 # Logger configuration
 logger = logging.getLogger(__name__)
 
-def get_dashboard_stats():
-    """
-    Retrieve statistics for the admin dashboard.
 
-    :return: Dictionary containing statistics.
-    """
-    try:
-        total_users = User.query.count()
-        statistics = {
-            "total_users": total_users,
-            "total_active_users": User.query.filter_by(is_active=True).count(),
-            "total_inactive_users": User.query.filter_by(is_active=False).count(),
-            "total_admins": User.query.filter_by(role='admin').count(),
-            "total_users_with_api_keys": User.query.filter(User.api_key != None).count()
-        }
-        return statistics
-    except Exception as e:
-        logger.error(f"Error retrieving dashboard statistics: {str(e)}")
-        raise
-
-def get_all_users():
-    """
-    Retrieve a list of all users.
-
-    :return: List of user objects.
-    """
+def list_all_users_service():
     try:
         users = User.query.all()
-        return users
+        user_list = [{'id': user.id, 'firstname': user.firstname, 'lastname': user.lastname, 'email': user.email,
+                      'role': user.role, 'active': user.is_active} for user in users]
+        return user_list
     except Exception as e:
-        logger.error(f"Error retrieving all users: {str(e)}")
+        logger.error(f"Error listing all users: {str(e)}")
         raise
 
-def change_user_role(user_id, new_role):
-    """
-    Change the role of a user.
 
-    :param user_id: ID of the user.
-    :param new_role: New role to assign to the user.
-    :return: User object after modification or None if user not found.
-    """
+def deactivate_user_service(user_id):
     try:
         user = User.query.get(user_id)
-        if user:
-            user.role = new_role
-            db.session.commit()
-            logger.info(f"User role changed: {user.email} is now an {new_role}")
-            return user
-        else:
-            return False
+        if not user:
+            raise ValueError("User not found")
+        user.is_active = False
+        db.session.commit()
+        logger.info(f"User {user_id} deactivated")
+        return {'status': 'success', 'message': f"User {user_id} deactivated successfully"}
     except Exception as e:
-        logger.error(f"Error changing user role: {str(e)}")
+        logger.error(f"Error deactivating user {user_id}: {str(e)}")
+        db.session.rollback()
+        raise
+
+
+def activate_user_service(user_id):
+    try:
+        user = User.query.get(user_id)
+        if not user:
+            raise ValueError("User not found")
+        user.is_active = True
+        db.session.commit()
+        logger.info(f"User {user_id} activated")
+        return {'status': 'success', 'message': f"User {user_id} activated successfully"}
+    except Exception as e:
+        logger.error(f"Error activating user {user_id}: {str(e)}")
+        db.session.rollback()
+        raise
+
+
+def view_user_logs_service():
+    """
+    Retrieve user activity logs.
+
+    :return: List of user activity logs.
+    """
+    try:
+        logs = Log.query.all()  # Assuming we have a Log model for storing activity logs
+        log_list = [{'user_id': log.user_id, 'action': log.action, 'timestamp': log.timestamp} for log in logs]
+        logger.info(f"Retrieved {len(log_list)} logs")
+        return log_list
+    except Exception as e:
+        logger.error(f"Error retrieving logs: {str(e)}")
         raise

@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify
 
-from src.controllers.admin_controller import admin_dashboard, list_users, deactivate_user, activate_user
+from src.controllers.admin_controller import admin_dashboard, list_users, deactivate_user, activate_user, view_user_logs
 from src.controllers.api_key_controller import get_user_api_keys, generate_api_key
 from src.controllers.user_controller import signup, login, logout
 from src.middlewares.decorators import role_required
@@ -28,6 +28,7 @@ auth_bp.route('/admin/dashboard', methods=['GET'])(admin_dashboard)
 auth_bp.route('/admin/users', methods=['GET'])(list_users)
 auth_bp.route('/admin/users/<int:user_id>/deactivate', methods=['PUT'])(deactivate_user)
 auth_bp.route('/admin/users/<int:user_id>/activate', methods=['PUT'])(activate_user)
+auth_bp.route('/admin/logs', methods=['GET'])(view_user_logs)
 
 # API Keys Blueprint
 api_key_bp = Blueprint('api_keys', __name__)
