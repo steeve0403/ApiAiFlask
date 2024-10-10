@@ -29,12 +29,13 @@ def signup_user(data, role='user'):
         raise ValueError("User already exists")
 
     # Create new user and hash password
-    hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
+    # hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
+
     new_user = User(
         firstname=firstname,
         lastname=lastname,
         email=email,
-        password=hashed_password,
+        password=password,
         role=role  # Set the role of the user
     )
 
@@ -43,8 +44,8 @@ def signup_user(data, role='user'):
 
     # Generate a JWT token for the new user
     tokens = create_jwt_token(user_id=new_user.id, role=new_user.role)
-    logger.info(f"New user signed up: {email}, {password}")
-    logger.info(f"Password hash generated: {hashed_password}")
+    logger.info(f"New user signed up: {email}")
+    logger.info(f"Password hash: {new_user.password_hash}")
     return tokens
 
 
@@ -66,23 +67,11 @@ def login_user(data):
     if not user:
         raise ValueError("User not found")
 
-    logger.info(f"hash: {user.password}, {password}")
     # Verify password
-    if not bcrypt.check_password_hash(user.password, password):
+    if not user.verify_password(password):
         raise ValueError("Invalid Password")
-
 
     # If the password is correct, generate a JWT token
     tokens = create_jwt_token(user_id=user.id, role=user.role)
     logger.info(f"User logged in: {email}")
-
-    # logger.info(f"Stored password hash: {user.password}")
-    # logger.info(f"Password provided for verification: {password}")
-    #
-    # if not bcrypt.check_password_hash(user.password, password):
-    #     logger.error("Password verification failed")
-    #     raise ValueError("Invalid Password")
-    # else:
-    #     logger.info("Password verification succeeded")
-
     return tokens

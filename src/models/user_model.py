@@ -10,7 +10,7 @@ class User(db.Model):
     firstname = db.Column(db.String(100), nullable=False)
     lastname = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(100), unique=True, nullable=False, index=True)
-    password = db.Column(db.String(255), nullable=False)
+    password_hash = db.Column(db.String(255), nullable=False)
     role = db.Column(db.String(50), nullable=False, default='user')  # Role can be 'user' or 'admin'
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -22,14 +22,20 @@ class User(db.Model):
         self.firstname = firstname
         self.lastname = lastname
         self.email = email
-        self.password = bcrypt.generate_password_hash(password).decode('utf-8')
+        self.password_hash = self.generate_password_hash(password)
         self.role = role
 
+
+    def generate_password_hash(self, password):
+        """
+        Generate a password hash for the user.
+        """
+        return bcrypt.generate_password_hash(password).decode('utf-8')
     def verify_password(self, password):
         """
         Verify the password with the hashed value.
         """
-        return bcrypt.check_password_hash(self.password, password)
+        return bcrypt.check_password_hash(self.password_hash, password)
 
     def save(self):
         """
