@@ -1,14 +1,15 @@
-from flask_jwt_extended import create_access_token, decode_token, get_jwt_identity, jwt_required, JWTManager
+from flask_jwt_extended import create_access_token, decode_token, get_jwt_identity, jwt_required
 from jwt import ExpiredSignatureError, InvalidTokenError
 from datetime import timedelta
 from flask import jsonify
 import os
+
 from src.models.token_model import RevokedToken
 from src.models.user_model import User
+from src.extensions import jwt
 import logging
 
-# Initialize the JWTManager
-jwt = JWTManager()
+
 
 # Logger configuration
 logger = logging.getLogger(__name__)

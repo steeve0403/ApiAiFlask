@@ -1,11 +1,9 @@
 from flask import Flask
 import os
 from dotenv import load_dotenv
-from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate
-from flask_bcrypt import Bcrypt
 from src.config.config import get_config
 import logging
+from src.extensions import db, migrate, bcrypt, jwt
 
 # Load environment variables
 load_dotenv()
@@ -25,9 +23,10 @@ app.config.from_object(config)
 app.secret_key = os.getenv('SECRET_KEY', 'default_secret_key')
 
 # Initialize extensions
-bcrypt = Bcrypt(app)
-db = SQLAlchemy(app)
-migrate = Migrate(app, db)
+bcrypt.init_app(app)
+db.init_app(app)
+migrate.init_app(app, db)
+jwt.init_app(app)
 
 # Import models to let the migrate tool know about them
 from src.models.user_model import User
