@@ -20,7 +20,7 @@ auth_bp.route('/signin', methods=['POST'])(login)
 auth_bp.route('/logout', methods=['POST'])(logout)
 
 # Route for generating an API key
-auth_bp.route('/generate', methods=['POST'])(generate_api_key)
+auth_bp.route('/generate-api-key', methods=['POST'])(generate_api_key)
 
 # Route reserved for administrators
 @auth_bp.route('/admin/dashboard', methods=['GET'])

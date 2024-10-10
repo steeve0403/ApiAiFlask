@@ -31,7 +31,7 @@ migrate = Migrate(app, db)
 
 # Import models to let the migrate tool know about them
 from src.models.user_model import User
-from src.models.token_model import Token  # Import other models if they exist
+from src.models.token_model import RevokedToken
 
 # Import and register Blueprints
 from src.routes import auth_bp

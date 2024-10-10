@@ -1,11 +1,10 @@
-from flask_jwt_extended import create_access_token, decode_token, get_jwt_identity, jwt_required, \
-    jwt_refresh_token_required, JWTManager
+from flask_jwt_extended import create_access_token, decode_token, get_jwt_identity, jwt_required, JWTManager
+from jwt import ExpiredSignatureError, InvalidTokenError
 from datetime import timedelta
 from flask import jsonify
 import os
-from src.models.revoked_token import \
-    RevokedToken  # Assurez-vous que le fichier revoked_token.py existe et est importé correctement
-from src.models.user_model import User  # Pour obtenir des informations complètes sur l'utilisateur
+from src.models.token_model import RevokedToken
+from src.models.user_model import User
 import logging
 
 # Initialize the JWTManager
@@ -53,15 +52,15 @@ def decode_jwt_token(token):
     try:
         decoded_token = decode_token(token)
         return decoded_token
-    except jwt.ExpiredSignatureError:
+    except ExpiredSignatureError:
         logger.warning("Token has expired")
         return jsonify({'status': 'failed', 'message': 'Token has expired'}), 401
-    except jwt.InvalidTokenError:
+    except InvalidTokenError:
         logger.warning("Invalid token used")
         return jsonify({'status': 'failed', 'message': 'Token is invalid'}), 401
 
 
-@jwt_refresh_token_required
+@jwt_required(refresh=True)
 def refresh_access_token():
     """
     Endpoint to refresh the access token using a valid refresh token.
