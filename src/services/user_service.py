@@ -1,6 +1,6 @@
-from werkzeug.security import generate_password_hash, check_password_hash
 from src.models.user_model import User
 from src import db
+from src.extensions import bcrypt
 from src.services.jwt_service import create_jwt_token
 import logging
 
@@ -11,7 +11,6 @@ logger = logging.getLogger(__name__)
 def signup_user(data, role='user'):
     """
     Sign up a new user by creating a new account.
-
     :param data: Dictionary containing user details.
     :param role: Role of the user (default is 'user').
     :return: Tokens if signup is successful.
@@ -30,12 +29,12 @@ def signup_user(data, role='user'):
         raise ValueError("User already exists")
 
     # Create new user and hash password
-    hashed_password = generate_password_hash(password)
+    hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
     new_user = User(
         firstname=firstname,
         lastname=lastname,
         email=email,
-        password=password,
+        password=hashed_password,
         role=role  # Set the role of the user
     )
 
@@ -44,7 +43,8 @@ def signup_user(data, role='user'):
 
     # Generate a JWT token for the new user
     tokens = create_jwt_token(user_id=new_user.id, role=new_user.role)
-    logger.info(f"New user signed up: {email}")
+    logger.info(f"New user signed up: {email}, {password}")
+    logger.info(f"Password hash generated: {hashed_password}")
     return tokens
 
 
@@ -66,11 +66,23 @@ def login_user(data):
     if not user:
         raise ValueError("User not found")
 
+    logger.info(f"hash: {user.password}, {password}")
     # Verify password
-    if not check_password_hash(user.password, password):
+    if not bcrypt.check_password_hash(user.password, password):
         raise ValueError("Invalid Password")
+
 
     # If the password is correct, generate a JWT token
     tokens = create_jwt_token(user_id=user.id, role=user.role)
     logger.info(f"User logged in: {email}")
+
+    # logger.info(f"Stored password hash: {user.password}")
+    # logger.info(f"Password provided for verification: {password}")
+    #
+    # if not bcrypt.check_password_hash(user.password, password):
+    #     logger.error("Password verification failed")
+    #     raise ValueError("Invalid Password")
+    # else:
+    #     logger.info("Password verification succeeded")
+
     return tokens

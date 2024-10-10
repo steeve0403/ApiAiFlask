@@ -1,6 +1,5 @@
-from src import db
+from src import db, bcrypt
 from datetime import datetime
-from flask_bcrypt import generate_password_hash, check_password_hash
 
 
 class User(db.Model):
@@ -23,20 +22,14 @@ class User(db.Model):
         self.firstname = firstname
         self.lastname = lastname
         self.email = email
-        self.password = self.generate_password_hash(password)
+        self.password = bcrypt.generate_password_hash(password).decode('utf-8')
         self.role = role
-
-    def generate_password_hash(self, password):
-        """
-        Hash the password using bcrypt.
-        """
-        return generate_password_hash(password).decode('utf-8')
 
     def verify_password(self, password):
         """
         Verify the password with the hashed value.
         """
-        return check_password_hash(self.password, password)
+        return bcrypt.check_password_hash(self.password, password)
 
     def save(self):
         """

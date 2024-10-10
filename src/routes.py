@@ -41,6 +41,3 @@ def admin_dashboard():
         return jsonify({'status': 'failed', 'message': 'An error occurred', 'error': str(e)}), 500
 
 
-"""
-curl -X POST http://127.0.0.1:5000/api/auth/signin -H "Content-Type: application/json" -d '{"firstname": "Steeve", "lastname": "Zych", "email": "zychsteeve4@gmail.com", "password": "azerty123"}'
-"""
