@@ -24,6 +24,7 @@ auth_bp.route('/generate-api-key', methods=['POST'])(generate_api_key)
 
 # Route reserved for administrators
 @auth_bp.route('/admin/dashboard', methods=['GET'])
+
 @jwt_required()
 @role_required('admin')  # Verify admin role before allowing access
 def admin_dashboard():
@@ -38,3 +39,8 @@ def admin_dashboard():
     except Exception as e:
         logger.error(f"Error accessing admin dashboard: {str(e)}")
         return jsonify({'status': 'failed', 'message': 'An error occurred', 'error': str(e)}), 500
+
+
+"""
+curl -X POST http://127.0.0.1:5000/api/auth/signin -H "Content-Type: application/json" -d '{"firstname": "Steeve", "lastname": "Zych", "email": "zychsteeve4@gmail.com", "password": "azerty123"}'
+"""

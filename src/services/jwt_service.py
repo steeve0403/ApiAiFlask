@@ -39,7 +39,7 @@ def create_jwt_token(user_id, role, expires_in=24):
         return {'access_token': access_token, 'refresh_token': refresh_token}
     except Exception as e:
         logger.error(f"Error generating token: {str(e)}")
-        return jsonify({'status': 'failed', 'message': 'Error generating token', 'error': str(e)}), 500
+        raise
 
 
 def decode_jwt_token(token):
