@@ -1,5 +1,5 @@
 from src.models.user_model import User
-from src import db
+from src import db, ConflictError, ValidationError, NotFoundError
 from src.extensions import bcrypt
 from src.services.jwt_service import create_jwt_token
 import logging
@@ -21,12 +21,12 @@ def signup_user(data, role='user'):
     password = data.get('password')
 
     if not firstname or not lastname or not email or not password:
-        raise ValueError("Missing parameters")
+        raise ValidationError("Missing parameters")
 
     # Check if the user already exists
     existing_user = User.query.filter_by(email=email).first()
     if existing_user:
-        raise ValueError("User already exists")
+        raise ConflictError("User already exists")
 
     # Create new user and hash password
     # hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
@@ -60,16 +60,16 @@ def login_user(data):
     password = data.get('password')
 
     if not email or not password:
-        raise ValueError("Email and Password are required")
+        raise ValidationError("Email and Password are required")
 
     # Check user in database
     user = User.query.filter_by(email=email).first()
     if not user:
-        raise ValueError("User not found")
+        raise NotFoundError("User not found")
 
     # Verify password
     if not user.verify_password(password):
-        raise ValueError("Invalid Password")
+        raise ValidationError("Invalid Password")
 
     # If the password is correct, generate a JWT token
     tokens = create_jwt_token(user_id=user.id, role=user.role)

@@ -3,7 +3,7 @@ import logging
 from flask import request, jsonify
 from flask_jwt_extended import get_jwt, jwt_required, get_jwt_identity
 
-from src import db
+from src import ValidationError, ConflictError, AppErrorBaseClass, db
 from src.models.user_model import User
 from src.models.log_model import Log
 from src.services.jwt_service import revoke_jwt_token  # Refactoring to use services
@@ -22,22 +22,22 @@ def signup():
     try:
         data = request.get_json()
         if not data:
-            raise ValueError("Invalid input data. JSON is required.")
+            raise ValidationError("Invalid input data. JSON is required.")
 
         required_fields = ["firstname", "lastname", "email", "password"]
         for field in required_fields:
             if field not in data or not data[field]:
-                raise ValueError(f"Missing required field: {field}")
+                raise ValidationError(f"Missing required field: {field}")
 
         role = data.get('role', 'user')  # Default role is 'user'
         tokens = signup_user(data, role=role)
         return jsonify({'status': "success", "message": "User Sign up Successful", "tokens": tokens}), 201
-    except ValueError as ve:
-        logger.error(f"Validation error during signup: {str(ve)}")
-        return jsonify({'status': "failed", "message": str(ve)}), 400
+    except ValidationError as ve:
+        raise ve
+    except ConflictError as e:
+        raise e
     except Exception as e:
-        logger.error(f"Unexpected error during signup: {str(e)}")
-        return jsonify({'status': "failed", "message": "An unexpected error occurred", 'error': str(e)}), 500
+        raise AppErrorBaseClass(str(e))
 
 
 def login():
@@ -64,12 +64,10 @@ def login():
             user.save()
 
         return jsonify({'status': "success", "message": "User Login Successful", "tokens": tokens}), 200
-    except ValueError as ve:
-        logger.error(f"Validation error during login: {str(ve)}")
-        return jsonify({'status': "failed", "message": str(ve)}), 400
+    except ValidationError as ve:
+        raise ve
     except Exception as e:
-        logger.error(f"Unexpected error during login: {str(e)}")
-        return jsonify({'status': "failed", "message": "An unexpected error occurred", 'error': str(e)}), 500
+        raise AppErrorBaseClass(str(e))
 
 
 @jwt_required()
@@ -101,8 +99,5 @@ def logout():
             return jsonify({"message": "Successfully logged out"}), 200
         else:
             raise ValueError("User not found")
-
     except Exception as e:
-        logger.error(f"Error during logout: {str(e)}")
-        return jsonify(
-            {'status': 'failed', 'message': 'An unexpected error occurred during logout', 'error': str(e)}), 500
+        raise AppErrorBaseClass(str(e))

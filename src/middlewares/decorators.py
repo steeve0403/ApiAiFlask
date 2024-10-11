@@ -12,7 +12,6 @@ logging.basicConfig(level=logging.INFO)
 def role_required(required_role):
     """
     Custom decorator to check if the user has the required role.
-
     :param required_role: The role required to access the resource.
     :return: Decorator function.
     """

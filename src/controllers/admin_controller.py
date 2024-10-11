@@ -14,11 +14,11 @@ logging.basicConfig(level=logging.INFO)
 @role_required('admin')
 def admin_dashboard():
     try:
-        logger.info("Admin dashboard accessed")
-        return jsonify({"message": "Welcome to the admin dashboard"}), 200
+        logger.info('Admin dashboard accessed')
+        return jsonify({'status': 'success', 'message': 'Welcome to the admin dashboard'}), 200
     except Exception as e:
         logger.error(f"Error accessing admin dashboard: {str(e)}")
-        return jsonify({'status': 'failed', 'message': 'An error occurred', 'error': str(e)}), 500
+        return jsonify({'status': 'failed', 'message': 'Error accessing admin dashboard', 'error': str(e)}), 500
 
 @jwt_required()
 @role_required('admin')
@@ -28,7 +28,7 @@ def list_users():
         return jsonify({'status': 'success', 'users': users}), 200
     except Exception as e:
         logger.error(f"Error listing users: {str(e)}")
-        return jsonify({'status': 'failed', 'message': 'An error occurred', 'error': str(e)}), 500
+        return jsonify({'status': 'failed', 'message': 'Error listing users', 'error': str(e)}), 500
 
 @jwt_required()
 @role_required('admin')
@@ -41,7 +41,7 @@ def deactivate_user(user_id):
         return jsonify({'status': 'failed', 'message': str(ve)}), 400
     except Exception as e:
         logger.error(f"Error deactivating user: {str(e)}")
-        return jsonify({'status': 'failed', 'message': 'An error occurred', 'error': str(e)}), 500
+        return jsonify({'status': 'failed', 'message': 'Error deactivating user', 'error': str(e)}), 500
 
 @jwt_required()
 @role_required('admin')
@@ -54,7 +54,7 @@ def activate_user(user_id):
         return jsonify({'status': 'failed', 'message': str(ve)}), 400
     except Exception as e:
         logger.error(f"Error activating user: {str(e)}")
-        return jsonify({'status': 'failed', 'message': 'An error occurred', 'error': str(e)}), 500
+        return jsonify({'status': 'failed', 'message': 'Error activating user', 'error': str(e)}), 500
 
 @jwt_required()
 @role_required('admin')
@@ -69,4 +69,4 @@ def view_user_logs():
         return jsonify({'status': 'success', 'logs': logs}), 200
     except Exception as e:
         logger.error(f"Error viewing user logs: {str(e)}")
-        return jsonify({'status': 'failed', 'message': 'An error occurred', 'error': str(e)}), 500
+        return jsonify({'status': 'failed', 'message': 'Error viewing user logs', 'error': str(e)}), 500
