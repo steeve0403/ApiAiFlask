@@ -24,6 +24,11 @@ def signup():
         if not data:
             raise ValueError("Invalid input data. JSON is required.")
 
+        required_fields = ["firstname", "lastname", "email", "password"]
+        for field in required_fields:
+            if field not in data or not data[field]:
+                raise ValueError(f"Missing required field: {field}")
+
         role = data.get('role', 'user')  # Default role is 'user'
         tokens = signup_user(data, role=role)
         return jsonify({'status': "success", "message": "User Sign up Successful", "tokens": tokens}), 201
