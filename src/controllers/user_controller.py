@@ -1,8 +1,11 @@
 import logging
 
 from flask import request, jsonify
-from flask_jwt_extended import get_jwt, jwt_required
+from flask_jwt_extended import get_jwt, jwt_required, get_jwt_identity
 
+from src import db
+from src.models.user_model import User
+from src.models.log_model import Log
 from src.services.jwt_service import revoke_jwt_token  # Refactoring to use services
 from src.services.user_service import signup_user, login_user  # Refactored to use user service
 
@@ -43,6 +46,18 @@ def login():
             raise ValueError("Invalid input data. JSON is required.")
 
         tokens = login_user(data)
+
+        # Log the login action
+        user_email = data.get('email')
+        user = User.query.filter_by(email=user_email).first()
+        if user:
+            log = Log(user_id=user.id, action="User logged in")
+            log.save()
+
+            # Activate the user if they are not active
+            user.is_active = True
+            user.save()
+
         return jsonify({'status': "success", "message": "User Login Successful", "tokens": tokens}), 200
     except ValueError as ve:
         logger.error(f"Validation error during login: {str(ve)}")
@@ -60,9 +75,28 @@ def logout():
     """
     try:
         jti = get_jwt()['jti']  # JWT ID
+        current_user_identity = get_jwt_identity()
+
+        # Revoke the JWT token
         revoke_jwt_token(jti)
-        logger.info(f"User logged out, token {jti} revoked")
-        return jsonify({"message": "Successfully logged out"}), 200
+
+        # Deactivate the user
+        user_id = current_user_identity['user_id']
+        user = User.query.get(user_id)
+
+        if user:
+            # Log the logout action
+            log = Log(user_id=current_user_identity, action="User logged out")
+            log.save()
+
+            user.is_active = False
+            db.session.commit()
+
+            logger.info(f"User logged out, token {jti} revoked, user_id {user_id} set to inactive")
+            return jsonify({"message": "Successfully logged out"}), 200
+        else:
+            raise ValueError("User not found")
+
     except Exception as e:
         logger.error(f"Error during logout: {str(e)}")
         return jsonify(

@@ -14,7 +14,7 @@ class User(db.Model):
     role = db.Column(db.String(50), nullable=False, default='user')  # Role can be 'user' or 'admin'
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    is_active = db.Column(db.Boolean, default=True)
+    is_active = db.Column(db.Boolean, default=False)
 
     def __init__(self, firstname, lastname, email, password, role='user'):
         """

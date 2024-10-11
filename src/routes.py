@@ -23,7 +23,7 @@ auth_bp.route('/signin', methods=['POST'])(login)
 # Route for logout
 auth_bp.route('/logout', methods=['POST'])(logout)
 
-# Routes réservées aux administrateurs
+# Routes for admin users
 auth_bp.route('/admin/dashboard', methods=['GET'])(admin_dashboard)
 auth_bp.route('/admin/users', methods=['GET'])(list_users)
 auth_bp.route('/admin/users/<int:user_id>/deactivate', methods=['PUT'])(deactivate_user)
