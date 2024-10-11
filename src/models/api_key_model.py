@@ -1,7 +1,7 @@
 import uuid
 from src import db
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 
 # Logger configuration
 logger = logging.getLogger(__name__)
@@ -14,7 +14,7 @@ class ApiKeyModel(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     key = db.Column(db.String(255), unique=True, nullable=False, index=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
 
     def __init__(self, user_id):
         """

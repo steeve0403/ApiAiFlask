@@ -1,5 +1,5 @@
 from src import db
-from datetime import datetime
+from datetime import datetime, timezone
 import logging
 
 # Logger configuration
@@ -11,7 +11,7 @@ class RevokedToken(db.Model):
     """
     id = db.Column(db.Integer, primary_key=True)
     jti = db.Column(db.String(36), nullable=False, unique=True, index=True)  # JWT ID with indexing for faster lookup
-    revoked_at = db.Column(db.DateTime, default=datetime.utcnow)
+    revoked_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
 
     def add(self):
         """

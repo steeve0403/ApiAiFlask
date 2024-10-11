@@ -1,5 +1,5 @@
 from src import db
-from datetime import datetime
+from datetime import datetime, timezone
 import logging
 
 # Logger configuration
@@ -12,7 +12,7 @@ class Log(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     action = db.Column(db.String(255), nullable=False)
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    timestamp = db.Column(db.DateTime, default=datetime.now(timezone.utc))
     details = db.Column(db.Text, nullable=True)
 
     def __init__(self, user_id, action):
