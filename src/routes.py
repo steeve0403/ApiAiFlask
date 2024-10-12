@@ -1,41 +1,47 @@
-from flask import Blueprint, jsonify
-
-from src.controllers.admin_controller import admin_dashboard, list_users, deactivate_user, activate_user, view_user_logs
+from flask import Blueprint
+from src.controllers.admin_controller import (
+    admin_dashboard, list_users, deactivate_user, activate_user, view_user_logs
+)
 from src.controllers.api_key_controller import get_user_api_keys, generate_api_key
 from src.controllers.user_controller import signup, login, logout
-from src.middlewares.decorators import role_required
-from flask_jwt_extended import jwt_required
 import logging
 
 # Logger configuration
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
+
+# Function to add multiple routes to a Blueprint
+def add_routes(blueprint, routes):
+    for route, methods, view_func in routes:
+        blueprint.add_url_rule(route, methods=methods, view_func=view_func)
+        logger.info(f"Added route: {route} added to {blueprint.name} with methods: {methods}")
+
+
 # Auth Blueprint
-auth_bp = Blueprint('auth', __name__)
+auth_bp = Blueprint('auth', __name__, url_prefix='/api/auth')
+auth_routes = [
+    ('/signup', ['POST'], signup),
+    ('/signin', ['POST'], login),
+    ('/logout', ['POST'], logout)
+]
+add_routes(auth_bp, auth_routes)
 
-# Route for registration
-auth_bp.route('/signup', methods=['POST'])(signup)
-
-# Route for login
-auth_bp.route('/signin', methods=['POST'])(login)
-
-# Route for logout
-auth_bp.route('/logout', methods=['POST'])(logout)
-
-# Routes for admin users
-auth_bp.route('/admin/dashboard', methods=['GET'])(admin_dashboard)
-auth_bp.route('/admin/users', methods=['GET'])(list_users)
-auth_bp.route('/admin/users/<int:user_id>/deactivate', methods=['PUT'])(deactivate_user)
-auth_bp.route('/admin/users/<int:user_id>/activate', methods=['PUT'])(activate_user)
-auth_bp.route('/admin/logs', methods=['GET'])(view_user_logs)
+# Admin Blueprint
+admin_bp = Blueprint('admin', __name__, url_prefix='/api/admin')
+admin_routes = [
+    ('/dashboard', ['GET'], admin_dashboard),
+    ('/users', ['GET'], list_users),
+    ('/users/<int:user_id>/deactivate', ['PUT'], deactivate_user),
+    ('/users/<int:user_id>/activate', ['PUT'], activate_user),
+    ('/logs', ['GET'], view_user_logs)
+]
+add_routes(admin_bp, admin_routes)
 
 # API Keys Blueprint
-api_key_bp = Blueprint('api_keys', __name__)
-
-# Route for generating an API key
-api_key_bp.route('/generate', methods=['POST'])(generate_api_key)
-
-# Route for getting user API keys
-api_key_bp.route('/all', methods=['GET'])(get_user_api_keys)
-
+api_key_bp = Blueprint('api_keys', __name__, url_prefix='/api/keys')
+api_key_routes = [
+    ('/generate', ['POST'], generate_api_key),
+    ('/all', ['GET'], get_user_api_keys)
+]
+add_routes(api_key_bp, api_key_routes)
