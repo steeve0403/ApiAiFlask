@@ -1,5 +1,6 @@
 from src.models.user_model import User
-from src import db, ConflictError, ValidationError, NotFoundError
+from src import db
+from src.exceptions import ConflictError, ValidationError, NotFoundError
 from src.extensions import bcrypt
 from src.services.jwt_service import create_jwt_token
 import logging
@@ -29,13 +30,13 @@ def signup_user(data, role='user'):
         raise ConflictError("User already exists")
 
     # Create new user and hash password
-    # hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
+    hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
 
     new_user = User(
         firstname=firstname,
         lastname=lastname,
         email=email,
-        password=password,
+        password=hashed_password,
         role=role  # Set the role of the user
     )
 
@@ -45,7 +46,6 @@ def signup_user(data, role='user'):
     # Generate a JWT token for the new user
     tokens = create_jwt_token(user_id=new_user.id, role=new_user.role)
     logger.info(f"New user signed up: {email}")
-    logger.info(f"Password hash: {new_user.password_hash}")
     return tokens
 
 
