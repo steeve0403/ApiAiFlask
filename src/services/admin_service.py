@@ -1,9 +1,8 @@
 import logging
-from sqlalchemy.orm import load_only
 from src.models.user_model import User
 from src.models.log_model import Log
 from src import db
-from src.exceptions import UserNotFoundError, DatabaseError
+from src.exceptions import NotFoundError, ValidationError
 
 # Logger configuration
 logger = logging.getLogger(__name__)
@@ -11,13 +10,12 @@ logger = logging.getLogger(__name__)
 
 def list_all_users_service():
     """
-    Retrieve a list of all users.
+    Retrieve all users in the system.
 
-    :return: List of dictionaries containing user details.
+    :return: List of users with their details.
     """
     try:
-        # Optimize the query to load only the necessary columns
-        users = User.query.options(load_only['id', 'firstname', 'lastname', 'email', 'role', 'is_active']).all()
+        users = User.query.all()
         user_list = [
             {
                 'id': user.id,
@@ -29,61 +27,60 @@ def list_all_users_service():
             }
             for user in users
         ]
-        logger.info(f"Retrieved {len(user_list)} users")
         return user_list
     except Exception as e:
         logger.error(f"Error listing all users: {str(e)}")
-        raise DatabaseError("Failed to list all users")
+        raise ValidationError("Failed to retrieve user list.")
 
 
 def deactivate_user_service(user_id):
     """
-    Deactivate a user account.
+    Deactivate a user by setting their active status to False.
 
     :param user_id: ID of the user to deactivate.
-    :return: Dictionary indicating the status of the operation.
+    :return: Status message indicating the deactivation.
     """
     try:
         user = User.query.get(user_id)
         if not user:
-            raise UserNotFoundError(f"User with ID {user_id} not found")
+            raise NotFoundError("User not found")
 
         user.is_active = False
         db.session.commit()
-        logger.info(f"User {user_id} deactivated successfully")
+        logger.info(f"User {user_id} deactivated")
         return {'status': 'success', 'message': f"User {user_id} deactivated successfully"}
-    except UserNotFoundError as e:
-        logger.error(str(e))
+    except NotFoundError as e:
+        logger.warning(f"Deactivation failed: {str(e)}")
         raise
     except Exception as e:
         logger.error(f"Error deactivating user {user_id}: {str(e)}")
         db.session.rollback()
-        raise DatabaseError(f"Failed to deactivate user {user_id}")
+        raise ValidationError("Failed to deactivate user.")
 
 
 def activate_user_service(user_id):
     """
-    Activate a user account.
+    Activate a user by setting their active status to True.
 
     :param user_id: ID of the user to activate.
-    :return: Dictionary indicating the status of the operation.
+    :return: Status message indicating the activation.
     """
     try:
         user = User.query.get(user_id)
         if not user:
-            raise UserNotFoundError(f"User with ID {user_id} not found")
+            raise NotFoundError("User not found")
 
         user.is_active = True
         db.session.commit()
-        logger.info(f"User {user_id} activated successfully")
+        logger.info(f"User {user_id} activated")
         return {'status': 'success', 'message': f"User {user_id} activated successfully"}
-    except UserNotFoundError as e:
-        logger.error(str(e))
+    except NotFoundError as e:
+        logger.warning(f"Activation failed: {str(e)}")
         raise
     except Exception as e:
         logger.error(f"Error activating user {user_id}: {str(e)}")
         db.session.rollback()
-        raise DatabaseError(f"Failed to activate user {user_id}")
+        raise ValidationError("Failed to activate user.")
 
 
 def view_user_logs_service():
@@ -93,8 +90,7 @@ def view_user_logs_service():
     :return: List of user activity logs.
     """
     try:
-        # Load only the necessary information on the logs
-        logs = Log.query.options(load_only['user_id', 'action', 'timestamp']).all()
+        logs = Log.query.all()  # Assuming we have a Log model for storing activity logs
         log_list = [
             {
                 'user_id': log.user_id,
@@ -107,4 +103,4 @@ def view_user_logs_service():
         return log_list
     except Exception as e:
         logger.error(f"Error retrieving logs: {str(e)}")
-        raise DatabaseError("Failed to retrieve user activity logs")
+        raise ValidationError("Failed to retrieve logs.")
