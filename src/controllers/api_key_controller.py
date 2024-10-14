@@ -1,7 +1,8 @@
 import logging
 from flask import jsonify
 from flask_jwt_extended import jwt_required
-from src.services.api_key_service import generate_api_key_service, get_user_api_keys_service
+from src.services.api_key_service import generate_api_key_service, get_user_api_keys_service, delete_api_key_service, \
+    verify_api_key_service
 from src.middlewares.decorators import handle_exceptions
 
 # Logger configuration
@@ -26,4 +27,26 @@ def get_user_api_keys():
     :return: JSON response containing all API keys.
     """
     response = get_user_api_keys_service()
+    return jsonify(response), 200
+
+@jwt_required()
+@handle_exceptions
+def delete_api_key(api_key):
+    """
+    Delete an API key for the current user.
+    :param api_key: The API key to delete.
+    :return: JSON response indicating success or failure.
+    """
+    response = delete_api_key_service(api_key)
+    return jsonify(response), 200
+
+@jwt_required()
+@handle_exceptions
+def verify_api_key(api_key):
+    """
+    Verify if the provided API key is valid and active.
+    :param api_key: The API key to verify.
+    :return: JSON response indicating whether the key is valid or not.
+    """
+    response = verify_api_key_service(api_key)
     return jsonify(response), 200
