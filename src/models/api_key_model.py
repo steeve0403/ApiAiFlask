@@ -16,9 +16,9 @@ class ApiKeyModel(db.Model):
     key = db.Column(db.String(255), unique=True, nullable=False, index=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
-    expires_at = db.Column(db.DateTime, nullable=False)
+    expires_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc) + timedelta(days=365))
 
-    def __init__(self, user_id, valid_for_days=30):
+    def __init__(self, user_id, valid_for_days=365):
         """
         Initialize the API key with a unique value, associate it with a user, and set the expiration date.
 

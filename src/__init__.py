@@ -1,3 +1,5 @@
+import logging
+
 from flask import Flask
 import os
 from dotenv import load_dotenv
@@ -10,7 +12,7 @@ load_dotenv()
 
 # Logger configuration
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 
 # Declare the app
 app = Flask(__name__)

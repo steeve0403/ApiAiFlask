@@ -7,7 +7,6 @@ from src.middlewares.decorators import handle_exceptions
 
 # Logger configuration
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)
 
 @jwt_required()
 @handle_exceptions

@@ -8,8 +8,6 @@ import logging
 
 # Logger configuration
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)
-
 
 # Function to add multiple routes to a Blueprint
 def add_routes(blueprint, routes):

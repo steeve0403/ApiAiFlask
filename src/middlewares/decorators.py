@@ -7,7 +7,6 @@ from src.exceptions import UnauthorizedError, NotFoundError, ValidationError
 
 # Logger configuration
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)
 
 def role_required(required_role):
     """

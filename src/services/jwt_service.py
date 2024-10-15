@@ -13,7 +13,6 @@ import logging
 
 # Logger configuration
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)
 
 # Secret key for signing JWTs (stored in environment variables for security)
 SECRET_KEY = os.getenv('SECRET_KEY', 'supersecretkey')

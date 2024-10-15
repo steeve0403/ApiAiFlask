@@ -65,10 +65,16 @@ def login_user(data):
     # Check user in database
     user = User.query.filter_by(email=email).first()
     if not user:
+        logger.warning(f"Login failed: User with email {email} not found")
         raise NotFoundError("User not found")
 
     # Verify password
-    if not user.verify_password(password):
+    password = data.get('password')
+    password_valid = user.verify_password(password)
+    if not password_valid:
+        # Log the password hash and the provided password
+        logger.debug(f"Stored password hash for user {email}: {user.password_hash}")
+        logger.debug(f"Password provided by user: {password}")
         raise ValidationError("Invalid Password")
 
     # If the password is correct, generate a JWT token

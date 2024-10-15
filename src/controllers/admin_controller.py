@@ -8,7 +8,6 @@ from src.middlewares.decorators import role_required, handle_exceptions
 
 # Logger configuration
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)
 
 @jwt_required()
 @role_required('admin')

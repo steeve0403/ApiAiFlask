@@ -1,5 +1,9 @@
+import logging
+
 from src import db, bcrypt
 from datetime import datetime, timezone
+
+logger = logging.getLogger(__name__)
 
 
 class User(db.Model):
@@ -24,20 +28,16 @@ class User(db.Model):
         self.firstname = firstname
         self.lastname = lastname
         self.email = email
-        self.password_hash = self.generate_password_hash(password)
+        self.password_hash = password
         self.role = role
 
-
-    def generate_password_hash(self, password):
-        """
-        Generate a password hash for the user.
-        """
-        return bcrypt.generate_password_hash(password).decode('utf-8')
     def verify_password(self, password):
         """
         Verify the password with the hashed value.
         """
-        return bcrypt.check_password_hash(self.password_hash, password)
+        result = bcrypt.check_password_hash(self.password_hash, password)
+        logger.debug(f"Password verification result: {result}")
+        return result
 
     def save(self):
         """
