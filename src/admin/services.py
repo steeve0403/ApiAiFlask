@@ -1,8 +1,9 @@
 import logging
-from src.models.user_model import User
-from src.models.log_model import Log
+
 from src import db
 from src.exceptions import NotFoundError, ValidationError
+from src.logs.models import Log
+from src.users.models import User
 
 # Logger configuration
 logger = logging.getLogger(__name__)

@@ -2,8 +2,8 @@ from functools import wraps
 from flask import jsonify
 from flask_jwt_extended import get_jwt_identity
 import logging
-from src.models.user_model import User
 from src.exceptions import UnauthorizedError, NotFoundError, ValidationError
+from src.users.models import User
 
 # Logger configuration
 logger = logging.getLogger(__name__)

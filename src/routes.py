@@ -1,10 +1,8 @@
 from flask import Blueprint
-from src.controllers.admin_controller import (
-    admin_dashboard, list_users, deactivate_user, activate_user, view_user_logs
-)
-from src.controllers.api_key_controller import get_user_api_keys, generate_api_key
-from src.controllers.user_controller import signup, login, logout
-import logging
+
+from src.users.controllers import *
+from src.admin.controllers import *
+from src.api_keys.controllers import *
 
 # Logger configuration
 logger = logging.getLogger(__name__)

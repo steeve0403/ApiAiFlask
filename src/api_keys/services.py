@@ -1,5 +1,6 @@
 from flask_jwt_extended import get_jwt_identity
-from src.models.api_key_model import ApiKeyModel
+
+from src.api_keys.models import ApiKeyModel
 from src.exceptions import NotFoundError, ValidationError
 import logging
 from datetime import datetime, timezone

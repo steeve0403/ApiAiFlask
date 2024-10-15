@@ -1,12 +1,11 @@
-import logging
 from flask import jsonify
 from flask_jwt_extended import jwt_required
-from src.services.api_key_service import generate_api_key_service, get_user_api_keys_service, delete_api_key_service, \
-    verify_api_key_service
+from src.api_keys.services import *
 from src.middlewares.decorators import handle_exceptions
 
 # Logger configuration
 logger = logging.getLogger(__name__)
+
 
 @jwt_required()
 @handle_exceptions
@@ -18,6 +17,7 @@ def generate_api_key():
     response = generate_api_key_service()
     return jsonify(response), 201
 
+
 @jwt_required()
 @handle_exceptions
 def get_user_api_keys():
@@ -27,6 +27,7 @@ def get_user_api_keys():
     """
     response = get_user_api_keys_service()
     return jsonify(response), 200
+
 
 @jwt_required()
 @handle_exceptions
@@ -38,6 +39,7 @@ def delete_api_key(api_key):
     """
     response = delete_api_key_service(api_key)
     return jsonify(response), 200
+
 
 @jwt_required()
 @handle_exceptions

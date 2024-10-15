@@ -39,8 +39,11 @@ app.register_error_handler(AppErrorBaseClass, handle_app_error)
 app.register_error_handler(Exception, handle_generic_exception)
 
 # Import models to let the migrate tool know about them
-from src.models.user_model import User
-from src.models.token_model import RevokedToken
+from src.users.models import User
+from src.tokens.models import RevokedToken
+from src.logs.models import Log
+from src.api_keys.models import ApiKeyModel
+
 
 # Import and register Blueprints
 from src.routes import auth_bp, api_key_bp

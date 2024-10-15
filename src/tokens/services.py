@@ -4,12 +4,11 @@ from datetime import timedelta
 from flask import jsonify
 import os
 
-from src.models.token_model import RevokedToken
-from src.models.user_model import User
 from src.extensions import jwt
 import logging
 
-
+from src.tokens.models import RevokedToken
+from src.users.models import User
 
 # Logger configuration
 logger = logging.getLogger(__name__)

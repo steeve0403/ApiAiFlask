@@ -1,9 +1,10 @@
-from src.models.user_model import User
 from src import db
 from src.exceptions import ConflictError, ValidationError, NotFoundError
 from src.extensions import bcrypt
-from src.services.jwt_service import create_jwt_token
 import logging
+
+from src.tokens.services import create_jwt_token
+from src.users.models import User
 
 # Logger configuration
 logger = logging.getLogger(__name__)

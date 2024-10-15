@@ -8,6 +8,7 @@ from src.exceptions import ValidationError
 # Logger configuration
 logger = logging.getLogger(__name__)
 
+
 class ApiKeyModel(db.Model):
     """
     Model for storing API keys associated with users.

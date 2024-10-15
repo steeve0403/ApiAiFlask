@@ -2,11 +2,12 @@ import logging
 from flask import request, jsonify
 from flask_jwt_extended import get_jwt, jwt_required, get_jwt_identity
 from src import db
-from src.models.user_model import User
-from src.models.log_model import Log
-from src.services.jwt_service import revoke_jwt_token
-from src.services.user_service import signup_user, login_user
+from src.logs.models import Log
+
 from src.middlewares.decorators import handle_exceptions
+from src.tokens.services import revoke_jwt_token
+from src.users.models import User
+from src.users.services import *
 
 # Logger configuration
 logger = logging.getLogger(__name__)

@@ -1,9 +1,6 @@
-import logging
 from flask import jsonify
 from flask_jwt_extended import jwt_required
-from src.services.admin_service import (
-    list_all_users_service, activate_user_service, deactivate_user_service, view_user_logs_service
-)
+from src.admin.services import *
 from src.middlewares.decorators import role_required, handle_exceptions
 
 # Logger configuration
