@@ -1,3 +1,5 @@
+from email_validator import validate_email, EmailNotValidError
+
 from src import db
 from src.exceptions import ConflictError, ValidationError, NotFoundError
 from src.extensions import bcrypt
@@ -10,12 +12,9 @@ from src.users.models import User
 logger = logging.getLogger(__name__)
 
 
-def signup_user(data, role='user'):
+def validate_signup_data(data):
     """
-    Sign up a new user by creating a new account.
-    :param data: Dictionary containing user details.
-    :param role: Role of the user (default is 'user').
-    :return: Tokens if signup is successful.
+    Validate the signup data including email format and password strength.
     """
     firstname = data.get('firstname')
     lastname = data.get('lastname')
@@ -23,7 +22,40 @@ def signup_user(data, role='user'):
     password = data.get('password')
 
     if not firstname or not lastname or not email or not password:
-        raise ValidationError("Missing parameters")
+        raise ValidationError("All fields (firstname, lastname, email, password) are required.")
+
+    # Validate the email format
+    try:
+        validate_email(email)  # This will raise EmailNotValidError if invalid
+    except EmailNotValidError as e:
+        raise ValidationError(f"Invalid email format: {str(e)}")
+
+    # Validate password strength (at least 8 characters, contains digits, uppercase and lowercase letters)
+    if len(password) < 8:
+        raise ValidationError("Password must be at least 8 characters long.")
+    if not any(char.isdigit() for char in password):
+        raise ValidationError("Password must contain at least one digit.")
+    if not any(char.islower() for char in password):
+        raise ValidationError("Password must contain at least one lowercase letter.")
+    if not any(char.isupper() for char in password):
+        raise ValidationError("Password must contain at least one uppercase letter.")
+
+
+def signup_user(data, role='user'):
+    """
+    Sign up a new user by creating a new account.
+    :param data: Dictionary containing user details.
+    :param role: Role of the user (default is 'user').
+    :return: Tokens if signup is successful.
+    """
+
+    # Validate the signup data
+    validate_signup_data(data)
+
+    firstname = data.get('firstname')
+    lastname = data.get('lastname')
+    email = data.get('email')
+    password = data.get('password')
 
     # Check if the user already exists
     existing_user = User.query.filter_by(email=email).first()
@@ -70,7 +102,6 @@ def login_user(data):
         raise NotFoundError("User not found")
 
     # Verify password
-    password = data.get('password')
     password_valid = user.verify_password(password)
     if not password_valid:
         # Log the password hash and the provided password

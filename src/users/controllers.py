@@ -12,6 +12,7 @@ from src.users.services import *
 # Logger configuration
 logger = logging.getLogger(__name__)
 
+
 @handle_exceptions
 def signup():
     """
@@ -22,13 +23,8 @@ def signup():
     role = data.get('role', 'user')  # Default role is 'user'
     tokens = signup_user(data, role=role)
 
-    # Activate the user if they are not active
-    user_email = data.get('email')
-    user = User.query.filter_by(email=user_email).first()
-    user.is_active = True
-    user.save()
-
     return jsonify({'status': "success", "message": "User Sign up Successful", "tokens": tokens}), 201
+
 
 @handle_exceptions
 def login():
@@ -51,6 +47,7 @@ def login():
         user.save()
 
     return jsonify({'status': "success", "message": "User Login Successful", "tokens": tokens}), 200
+
 
 @jwt_required()
 @handle_exceptions

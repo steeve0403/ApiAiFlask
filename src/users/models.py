@@ -39,6 +39,18 @@ class User(db.Model):
         logger.debug(f"Password verification result: {result}")
         return result
 
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'firstname': self.firstname,
+            'lastname': self.lastname,
+            'email': self.email,
+            'role': self.role,
+            'is_active': self.is_active,
+            'created_at': self.created_at.isoformat(),
+            'updated_at': self.updated_at.isoformat(),
+        }
+
     def save(self):
         """
         Save the user to the database.
