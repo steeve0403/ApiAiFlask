@@ -28,3 +28,4 @@ rpds-py==0.20.0
 SQLAlchemy==2.0.35
 typing_extensions==4.12.2
 Werkzeug==3.0.4
+

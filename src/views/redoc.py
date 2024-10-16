@@ -9,3 +9,4 @@ def redoc():
     """
     spec_url = '/swagger.json'
     return render_template('redoc.html', spec_url=spec_url)
+

@@ -1,5 +1,4 @@
 from flask_restx import Namespace, Resource, fields
-from flask import request
 from flask_jwt_extended import jwt_required
 from src.admin.services import *
 import logging
@@ -8,7 +7,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 # Create Namespace for admin
-admin_ns = Namespace('admin', description='Admin related operations')
+admin_ns = Namespace('admin', description='Admin related operations', tags=['admin'])
 
 # Define models for input/output with Flask-RESTX
 user_action_response_model = admin_ns.model('UserActionResponse', {

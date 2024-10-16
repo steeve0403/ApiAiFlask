@@ -7,7 +7,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 # Create Namespace for API keys
-api_keys_ns = Namespace('api_keys', description='API key related operations')
+api_keys_ns = Namespace('api_keys', description='API key related operations', tags=['api_keys'])
 
 # Define models for input/output with Flask-RESTX
 api_key_model = api_keys_ns.model('APIKey', {
@@ -36,7 +36,7 @@ class GenerateApiKey(Resource):
         Generate a new API key for the current user
         """
         current_user = get_jwt_identity()
-        response = generate_api_key_service(current_user.get('user_id'))
+        response = generate_api_key_service()
         return {'api_key': response['api_key']}, 201
 
 

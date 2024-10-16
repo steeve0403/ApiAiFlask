@@ -1,45 +1,39 @@
-from flask import Flask, render_template
+from flask import Flask
 import os
 from dotenv import load_dotenv
-from flask_cors import CORS
+from flask_restx import Api
 
 from src.config.config import get_config
 from src.extensions import db, migrate, bcrypt, jwt
-from src.error_handler import *
-from flask_restx import Api
-
-# Import Blueprint for redoc
+from src.error_handler import register_error_handlers
 from src.views.redoc import redoc_bp
+from flask_cors import CORS
 
 # Load environment variables
 load_dotenv()
-
-# Logger configuration
-logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.DEBUG)
 
 
 # Declare the app
 def create_app():
     app = Flask(__name__)
 
-    # Enable CORS only for documentation
-    # CORS(app, resources={r"/swagger/*": {"origins": "*"}, r"/redoc": {"origins": "*"}})
+    # Enable CORS for documentation access
+    CORS(app, resources={r"/swagger/*": {"origins": "*"}, r"/redoc/*": {"origins": "*"}})
 
+    # Initialize the API with Swagger support via Flask-Restx
     api = Api(app,
               version='1.0',
-              title='Api AI Flask Documentation',
-              description='A simple Flask API for managing AI models and interact with them.',
-              contact='example@gmail.com',
-              license='MIT',
-    )
+              title='Flask AI API',
+              description='API for managing AI models and user authentication.',
+              doc='/swagger'  # Swagger UI available at /swagger
+              )
 
     # Load the appropriate configuration based on the environment
-    config = get_config()
-    app.config.from_object(config)
+    app.config.from_object(get_config())
 
-    # Load the secret key defined in the .env file
-    app.secret_key = os.getenv('SECRET_KEY', 'default_secret_key')
+    # Ensure the secret keys are properly set
+    app.secret_key = app.config.get('SECRET_KEY')
+    app.config['JWT_SECRET_KEY'] = app.config.get('JWT_SECRET_KEY')
 
     # Initialize extensions
     bcrypt.init_app(app)
@@ -50,27 +44,22 @@ def create_app():
     # Register error handlers
     register_error_handlers(app)
 
-    # Import models to let the migrate tool know about them
-    from src.users.models import User
-    from src.tokens.models import RevokedToken
-    from src.logs.models import Log
-    from src.api_keys.models import ApiKeyModel
+    # Import and register namespaces from src
+    from src.users.namespaces import users_ns
+    from src.admin.namespaces import admin_ns
+    from src.api_keys.namespaces import api_keys_ns
 
-    # Register Blueprints
-    from src.routes import register_blueprints
-    register_blueprints(app)
+    # Register namespaces with paths
+    api.add_namespace(users_ns, path='/api/users')
+    api.add_namespace(admin_ns, path='/api/admin')
+    api.add_namespace(api_keys_ns, path='/api/keys')
+
+    # Register Redoc blueprint
     app.register_blueprint(redoc_bp)
 
-    # Import namespaces and add them to the API
-    # from src.users.namespaces import users_ns
-    # from src.admin.namespaces import admin_ns
-    # from src.api_keys.namespaces import api_keys_ns
-    #
-    # api.add_namespace(users_ns, path='/api/users')
-    # api.add_namespace(admin_ns, path='/api/admin')
-    # api.add_namespace(api_keys_ns, path='/api/keys')
-
-
+    # Register custom routes from routes.py
+    from src.routes import register_blueprints
+    register_blueprints(app)
 
     return app
 

@@ -1,6 +1,5 @@
-from flask_restx import Namespace, Resource, fields
 from flask import request
-
+from flask_restx import Namespace, Resource, fields
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
 from src.users.services import *
@@ -9,7 +8,7 @@ from src.users.services import *
 logger = logging.getLogger(__name__)
 
 # Create Namespace for users
-users_ns = Namespace('users', description='User related operations')
+users_ns = Namespace('users', description='User related operations', tags=['users'])
 
 # Define models for input/output with Flask-RESTX
 signup_model = users_ns.model('SignUp', {
