@@ -1,0 +1,25 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    color: #333;
+    margin: 0;
+    padding: 0;
+}
+
+.header {
+    background-color: #FF6347;
+    color: white;
+    padding: 15px 20px;
+    text-align: center;
+    font-size: 1.5em;
+    font-weight: bold;
+}
+
+.container {
+    padding: 20px;
+}
+
+redoc {
+    display: block;
+    margin-top: 20px;
+}
