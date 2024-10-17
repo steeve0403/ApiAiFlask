@@ -7,6 +7,6 @@ def redoc():
     """
     Display the ReDoc documentation page.
     """
-    spec_url = 'http://127.0.0.1:5000/swagger.json'
+    spec_url = 'swagger.json'
     return render_template('redoc.html', spec_url=spec_url)
 

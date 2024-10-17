@@ -59,6 +59,7 @@ def create_app():
     # Register Redoc blueprint
     app.register_blueprint(redoc_bp)
 
+
     # Register custom routes from routes.py
     from src.routes import register_blueprints
     register_blueprints(app)
