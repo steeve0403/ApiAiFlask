@@ -1,9 +1,10 @@
 from flask_jwt_extended import create_access_token, decode_token, get_jwt_identity, jwt_required
-from jwt import ExpiredSignatureError, InvalidTokenError
+from jwt import ExpiredSignatureError
 from datetime import timedelta
 from flask import jsonify
 import os
 
+from src.exceptions import TokenExpiredError, JWTDecodeError, InvalidTokenError
 from src.extensions import jwt
 import logging
 
@@ -56,11 +57,12 @@ def decode_jwt_token(token):
         decoded_token = decode_token(token)
         return decoded_token
     except ExpiredSignatureError:
-        logger.warning("Token has expired")
-        return jsonify({'status': 'failed', 'message': 'Token has expired'}), 401
+        raise TokenExpiredError("Token has expired")
     except InvalidTokenError:
-        logger.warning("Invalid token used")
-        return jsonify({'status': 'failed', 'message': 'Token is invalid'}), 401
+        raise InvalidTokenError("Invalid token provided")
+    except Exception as e:
+        logger.error(f"Error decoding token: {str(e)}")
+        raise JWTDecodeError("Failed to decode JWT token")
 
 
 @jwt_required(refresh=True)
