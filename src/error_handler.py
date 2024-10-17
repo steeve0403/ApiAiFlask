@@ -2,6 +2,7 @@ import logging
 from flask import jsonify
 from src.exceptions import ValidationError, UnauthorizedError, NotFoundError, AppErrorBaseClass, ConflictError, \
     JWTDecodeError, TokenExpiredError, InvalidTokenError
+from src.utils.alerts import send_email_alert
 
 logger = logging.getLogger(__name__)
 
@@ -47,7 +48,12 @@ def handle_app_error(error):
 
 
 def handle_generic_exception(error):
-    logger.error(f"Unexpected Error: {str(error)}")
+    error_message = f"Unexpected Error: {str(error)}"
+    logger.error(error_message)
+
+    # Send an email alert
+    send_email_alert("Critical Error on Z-AI", error_message)
+    # send_slack_alert(error_message)
     return jsonify({'status': 'failed', 'message': 'An unexpected error occurred', 'error': str(error)}), 500
 
 
