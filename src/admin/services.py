@@ -17,17 +17,7 @@ def list_all_users_service():
     """
     try:
         users = User.query.all()
-        user_list = [
-            {
-                'id': user.id,
-                'firstname': user.firstname,
-                'lastname': user.lastname,
-                'email': user.email,
-                'role': user.role,
-                'active': user.is_active
-            }
-            for user in users
-        ]
+        user_list = [user.to_dict() for user in users]
         return user_list
     except Exception as e:
         logger.error(f"Error listing all users: {str(e)}")
@@ -41,22 +31,27 @@ def deactivate_user_service(user_id):
     :param user_id: ID of the user to deactivate.
     :return: Status message indicating the deactivation.
     """
-    try:
-        user = User.query.get(user_id)
-        if not user:
-            raise NotFoundError("User not found")
 
-        user.is_active = False
-        db.session.commit()
-        logger.info(f"User {user_id} deactivated")
-        return {'status': 'success', 'message': f"User {user_id} deactivated successfully"}
-    except NotFoundError as e:
-        logger.warning(f"Deactivation failed: {str(e)}")
-        raise
-    except Exception as e:
-        logger.error(f"Error deactivating user {user_id}: {str(e)}")
-        db.session.rollback()
-        raise ValidationError("Failed to deactivate user.")
+    def deactivate_user_service(user_id):
+        try:
+            user = User.query.get(user_id)
+            if not user:
+                raise NotFoundError("User not found")
+
+            if not user.is_active:
+                raise ValidationError(f"User {user_id} is already deactivated.")
+
+            user.is_active = False
+            db.session.commit()
+            logger.info(f"User {user_id} deactivated")
+            return {'status': 'success', 'message': f"User {user_id} deactivated successfully"}
+        except NotFoundError as e:
+            logger.warning(f"Deactivation failed: {str(e)}")
+            raise
+        except Exception as e:
+            logger.error(f"Error deactivating user {user_id}: {str(e)}")
+            db.session.rollback()
+            raise ValidationError("Failed to deactivate user.")
 
 
 def activate_user_service(user_id):
@@ -84,21 +79,23 @@ def activate_user_service(user_id):
         raise ValidationError("Failed to activate user.")
 
 
-def view_user_logs_service():
+def view_user_logs_service(page=1, per_page=20):
     """
-    Retrieve user activity logs.
+    Retrieve user activity logs with pagination.
 
+    :param page: The page number.
+    :param per_page: Number of logs per page.
     :return: List of user activity logs.
     """
     try:
-        logs = Log.query.all()  # Assuming we have a Log model for storing activity logs
+        logs = Log.query.paginate(page=page, per_page=per_page, error_out=False)
         log_list = [
             {
                 'user_id': log.user_id,
                 'action': log.action,
-                'timestamp': log.timestamp
+                'timestamp': log.timestamp.isoformat()
             }
-            for log in logs
+            for log in logs.items
         ]
         logger.info(f"Retrieved {len(log_list)} logs")
         return log_list

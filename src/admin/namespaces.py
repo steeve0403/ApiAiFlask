@@ -1,3 +1,4 @@
+from flask import request
 from flask_restx import Namespace, Resource, fields
 from flask_jwt_extended import jwt_required
 from src.admin.services import *
@@ -89,7 +90,9 @@ class ViewUserLogs(Resource):
     @admin_ns.response(500, 'Failed to retrieve logs')
     def get(self):
         """
-        View logs of user activities
+        View logs of user activities with pagination.
         """
-        logs = view_user_logs_service()
+        page = request.args.get('page', 1, type=int)
+        per_page = request.args.get('per_page', 20, type=int)
+        logs = view_user_logs_service(page=page, per_page=per_page)
         return {'status': 'success', 'logs': logs}, 200
