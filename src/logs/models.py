@@ -1,6 +1,6 @@
 import logging
 from src import db
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 # Logger configuration
 logger = logging.getLogger(__name__)
@@ -15,17 +15,20 @@ class Log(db.Model):
     action = db.Column(db.String(255), nullable=False)
     timestamp = db.Column(db.DateTime, default=datetime.now(timezone.utc))
     details = db.Column(db.Text, nullable=True)
+    ip_address = db.Column(db.String(45), nullable=True)  # For storing IPv4/IPv6 addresses
 
-    def __init__(self, user_id, action, details=None):
+    def __init__(self, user_id, action, details=None, ip_address=None):
         """
         Initialize a log entry with the user ID, action, and optional details.
         :param user_id: ID of the user who performed the action.
         :param action: Description of the action performed.
         :param details: Additional details about the action (optional).
+        :param ip_address: IP address from where the action was performed (optional).
         """
         self.user_id = user_id
         self.action = action
         self.details = details
+        self.ip_address = ip_address
 
     def save(self):
         """
@@ -50,6 +53,21 @@ class Log(db.Model):
             return cls.query.filter_by(user_id=user_id).all()
         except Exception as e:
             logger.error(f"Error finding logs for user {user_id}: {str(e)}")
+            return []
+
+    @classmethod
+    def find_by_user_id_paginated(cls, user_id, page, per_page):
+        """
+        Find paginated log entries by user ID.
+        :param user_id: The user ID to search for.
+        :param page: The page number.
+        :param per_page: The number of logs per page.
+        :return: Paginated list of log entries for the user.
+        """
+        try:
+            return cls.query.filter_by(user_id=user_id).paginate(page, per_page, error_out=False)
+        except Exception as e:
+            logger.error(f"Error finding paginated logs for user {user_id}: {str(e)}")
             return []
 
     @classmethod
@@ -79,6 +97,21 @@ class Log(db.Model):
             logger.error(f"Error finding logs between {start_date} and {end_date}: {str(e)}")
             return []
 
+    @classmethod
+    def delete_old_logs(cls, older_than_days):
+        """
+        Delete log entries older than a specified number of days.
+        :param older_than_days: Number of days before which logs should be deleted.
+        """
+        try:
+            cutoff_date = datetime.now(timezone.utc) - timedelta(days=older_than_days)
+            cls.query.filter(cls.timestamp < cutoff_date).delete()
+            db.session.commit()
+            logger.info(f"Old logs older than {older_than_days} days deleted.")
+        except Exception as e:
+            logger.error(f"Error deleting old logs: {str(e)}")
+            db.session.rollback()
+
     def delete(self):
         """
         Delete the log entry from the database.
@@ -92,4 +125,4 @@ class Log(db.Model):
             db.session.rollback()
 
     def __repr__(self):
-        return f"Log(user_id={self.user_id}, action='{self.action}', timestamp={self.timestamp}, details='{self.details}')"
+        return f"Log(user_id={self.user_id}, action='{self.action}', timestamp={self.timestamp}, details='{self.details}', ip_address='{self.ip_address}')"
