@@ -14,7 +14,7 @@ def send_email_alert(subject, error_details):
     """
     try:
         msg = Message(
-            subject,
+            subject="Z-AI Alert: " + subject,
             recipients=[current_app.config['ADMIN_EMAIL']],  # Admin email configured in config.py
             body=f"Critical error detected:\n\n{error_details}"
         )
