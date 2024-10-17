@@ -16,6 +16,10 @@ logger = logging.getLogger(__name__)
 # Secret key for signing JWTs (stored in environment variables for security)
 SECRET_KEY = os.getenv('SECRET_KEY', 'supersecretkey')
 
+# Access token expiration (Configurable via environment variable)
+ACCESS_TOKEN_EXPIRES = int(os.getenv('ACCESS_TOKEN_EXPIRES', 24))
+REFRESH_TOKEN_EXPIRES = int(os.getenv('REFRESH_TOKEN_EXPIRES', 7))
+
 
 def create_jwt_token(user_id, role, expires_in=24):
     """
@@ -30,10 +34,10 @@ def create_jwt_token(user_id, role, expires_in=24):
         # Generate access and refresh tokens with appropriate expiration
         access_token = create_access_token(
             identity={'user_id': user_id, 'role': role},
-            expires_delta=timedelta(hours=expires_in)
+            expires_delta=timedelta(hours=ACCESS_TOKEN_EXPIRES)
         )
         refresh_token = create_access_token(
-            identity=user_id, expires_delta=timedelta(days=7)  # Longer expiration for refresh token
+            identity=user_id, expires_delta=timedelta(REFRESH_TOKEN_EXPIRES)  # Longer expiration for refresh token
         )
         return {'access_token': access_token, 'refresh_token': refresh_token}
     except Exception as e:
@@ -154,6 +158,20 @@ def revoke_jwt_token(token_jti):
         logger.info(f"Token {token_jti} revoked successfully")
     except Exception as e:
         logger.error(f"Error revoking token: {str(e)}")
+
+
+def revoke_all_tokens_for_user(user_id):
+    """
+    Revoke all tokens for a given user by revoking any active tokens.
+    :param user_id: ID of the user whose tokens will be revoked.
+    """
+    try:
+        user_tokens = RevokedToken.query.filter_by(user_id=user_id).all()
+        for token in user_tokens:
+            token.add()
+        logger.info(f"All tokens for user {user_id} revoked successfully")
+    except Exception as e:
+        logger.error(f"Error revoking all tokens for user {user_id}: {str(e)}")
 
 
 @jwt.token_in_blocklist_loader

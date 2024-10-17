@@ -39,3 +39,18 @@ class RevokedToken(db.Model):
         except Exception as e:
             logger.error(f"Error checking if token is revoked: {str(e)}")
             return False
+
+    @classmethod
+    def clean_revoked_tokens(cls):
+        """
+        Remove tokens that were revoked more than 7 days ago (assuming the token expiration).
+        This can be called periodically as a maintenance task.
+        """
+        try:
+            expired_time = datetime.now(timezone.utc) - timedelta(days=7)
+            cls.query.filter(cls.revoked_at < expired_time).delete()
+            db.session.commit()
+            logger.info("Old revoked tokens cleaned up.")
+        except Exception as e:
+            logger.error(f"Error cleaning up revoked tokens: {str(e)}")
+            db.session.rollback()
