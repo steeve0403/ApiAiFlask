@@ -48,11 +48,13 @@ def create_app():
     from src.users.namespaces import users_ns
     from src.admin.namespaces import admin_ns
     from src.api_keys.namespaces import api_keys_ns
+    from src.tokens.namespaces import token_ns
 
     # Register namespaces with paths
     api.add_namespace(users_ns, path='/api/users')
     api.add_namespace(admin_ns, path='/api/admin')
     api.add_namespace(api_keys_ns, path='/api/keys')
+    api.add_namespace(token_ns, path='/api/tokens')
 
     # Register Redoc blueprint
     app.register_blueprint(redoc_bp)
