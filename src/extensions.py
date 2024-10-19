@@ -10,3 +10,14 @@ migrate = Migrate()
 bcrypt = Bcrypt()
 jwt = JWTManager()
 mail = Mail()
+
+def init_extensions(app):
+    """
+    Initialize global extensions.
+    :param app: Flask application instance.
+    """
+    db.init_app(app)
+    migrate.init_app(app, db)
+    bcrypt.init_app(app)
+    jwt.init_app(app)
+    mail.init_app(app)

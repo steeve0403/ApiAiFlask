@@ -1,7 +1,7 @@
 import logging
 from flask import request, jsonify
 from flask_jwt_extended import get_jwt, jwt_required, get_jwt_identity
-from src import db
+from src.extensions import db
 from src.logs.models import Log
 
 from src.middlewares.decorators import handle_exceptions

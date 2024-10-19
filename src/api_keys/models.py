@@ -1,5 +1,5 @@
 import uuid
-from src import db
+from src.extensions import db
 import logging
 from datetime import datetime, timedelta, timezone
 from sqlalchemy.exc import SQLAlchemyError

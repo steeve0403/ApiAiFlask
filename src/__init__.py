@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from flask_restx import Api
 
 from src.config.config import get_config
-from src.extensions import db, migrate, bcrypt, jwt
+from src.extensions import init_extensions
 from src.error_handler import register_error_handlers
 from src.views.redoc import redoc_bp
 from flask_cors import CORS
@@ -36,10 +36,7 @@ def create_app():
     app.config['JWT_SECRET_KEY'] = app.config.get('JWT_SECRET_KEY')
 
     # Initialize extensions
-    bcrypt.init_app(app)
-    db.init_app(app)
-    migrate.init_app(app, db)
-    jwt.init_app(app)
+    init_extensions(app)
 
     # Register error handlers
     register_error_handlers(app)

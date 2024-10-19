@@ -1,6 +1,6 @@
 import logging
 
-from src import db, bcrypt
+from src.extensions import db, bcrypt
 from datetime import datetime, timezone
 
 logger = logging.getLogger(__name__)

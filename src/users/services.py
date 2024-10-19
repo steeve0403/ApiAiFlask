@@ -1,8 +1,7 @@
 from email_validator import validate_email, EmailNotValidError
 
-from src import db
 from src.exceptions import ConflictError, ValidationError, NotFoundError
-from src.extensions import bcrypt
+from src.extensions import bcrypt, db
 import logging
 
 from src.tokens.services import create_jwt_token

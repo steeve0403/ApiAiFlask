@@ -1,5 +1,5 @@
 import logging
-from src import db
+from src.extensions import db
 from datetime import datetime, timezone, timedelta
 
 # Logger configuration

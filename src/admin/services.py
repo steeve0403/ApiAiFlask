@@ -1,6 +1,6 @@
 import logging
 
-from src import db
+from src.extensions import db
 from src.exceptions import NotFoundError, ValidationError
 from src.logs.models import Log
 from src.users.models import User
