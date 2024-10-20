@@ -1,5 +1,5 @@
 from flask_restx import Namespace, Resource, fields
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask_jwt_extended import jwt_required
 from src.api_keys.services import *
 import logging
 
@@ -35,7 +35,7 @@ class GenerateApiKey(Resource):
         """
         Generate a new API key for the current user
         """
-        current_user = get_jwt_identity()
+        # current_user = get_jwt_identity()
         response = generate_api_key_service()
         return {'api_key': response['api_key']}, 201
 
@@ -50,8 +50,8 @@ class GetUserApiKeys(Resource):
         """
         Get all API keys associated with the current user
         """
-        current_user = get_jwt_identity()
-        response = get_user_api_keys_service(current_user.get('user_id'))
+        # current_user = get_jwt_identity()
+        response = get_user_api_keys_service()
         return {'status': 'success', 'api_keys': response['api_keys']}, 200
 
 
@@ -66,6 +66,6 @@ class DeleteApiKey(Resource):
         """
         Delete an API key by its value
         """
-        current_user = get_jwt_identity()
-        delete_api_key_service(api_key, current_user.get('user_id'))
+        # current_user = get_jwt_identity()
+        delete_api_key_service(api_key)
         return {'status': 'success', 'message': 'API key successfully deleted'}, 200

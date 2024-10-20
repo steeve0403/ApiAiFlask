@@ -17,7 +17,7 @@ class User(db.Model):
     password_hash = db.Column(db.String(255), nullable=False)
     role = db.Column(db.String(50), nullable=False, default='user')  # Role can be 'user' or 'admin'
     created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.now(timezone.utc))
+    updated_at = db.Column(db.DateTime, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc))
     is_active = db.Column(db.Boolean, default=False)
     api_keys = db.relationship('ApiKeyModel', backref='user', lazy='dynamic')
 
